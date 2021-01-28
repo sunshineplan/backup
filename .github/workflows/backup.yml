@@ -1,0 +1,31 @@
+name: backup
+on:
+  schedule:
+    - cron: '0 0 1 * *'
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Download and Zip
+        id : download
+        run: |
+          xargs -a backup.txt -I@ curl -Lo @.zip https://github.com/sunshineplan/@/archive/main.zip
+          zip -9vr backup.zip *.zip
+          echo "::set-output name=date::$(TZ=CST date +'%Y-%m-%d')"
+
+      - name: Send backup email
+        uses: dawidd6/action-send-mail@v2
+        with:
+          server_address: smtp.live.com
+          server_port: 587
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          subject: Source Code Backup-${{ steps.download.outputs.date }}
+          body: Source Code Backup
+          from: Github Actions
+          to: ${{ secrets.USERNAME }}
+          attachments: backup.zip
