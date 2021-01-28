@@ -3,7 +3,9 @@ on:
   workflow_dispatch:
     inputs:
       manual:
-        description: '(Manual)'
+        description: 'Manual Backup'
+        required: true
+        default: '(Manual)'
   schedule:
     - cron: '0 0 * * *'
 
