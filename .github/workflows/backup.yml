@@ -1,7 +1,11 @@
 name: backup
 on:
+  workflow_dispatch:
+    inputs:
+      manual:
+        description: '(Manual)'
   schedule:
-    - cron: '0 0 1 * *'
+    - cron: '0 0 * * *'
 
 jobs:
   backup:
@@ -25,7 +29,7 @@ jobs:
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
           subject: Source Code Backup-${{ steps.download.outputs.date }}
-          body: Source Code Backup
+          body: Source Code Backup${{ github.event.inputs.manual }}
           from: Github Actions
           to: ${{ secrets.USERNAME }}
           attachments: backup.zip
