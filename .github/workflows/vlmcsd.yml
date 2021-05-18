@@ -1,0 +1,55 @@
+name: vlmcsd
+on:
+  workflow_dispatch:
+
+jobs:
+  vlmcsd:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete Old Release
+        uses: actions/github-script@v4
+        with:
+          script: |
+            let release
+            try {
+              release = await github.repos.getReleaseByTag({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag: 'vlmcsd'
+              })
+            } catch(e) {
+              console.error(e)
+              return
+            }
+            await github.repos.deleteRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: release.data.id
+            })
+            await github.git.deleteRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: 'tags/vlmcsd'
+            })
+
+      - name: Build
+        run: |
+          sudo apt install make gcc mingw-w64
+          curl -Lo- https://github.com/Wind4/vlmcsd/archive/svn1113.tar.gz | tar zx
+          make -C vlmcsd-svn1113
+          cp -r vlmcsd-svn1113/bin bin
+          make clean && CC=x86_64-w64-mingw32-gcc make -C vlmcsd-svn1113
+          cp vlmcsd-svn1113/bin/* bin
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: vlmcsd
+          name: vlmcsd
+          files: |
+            vlmcs
+            vlmcsd
+            vlmcs.exe
+            vlmcsd.exe

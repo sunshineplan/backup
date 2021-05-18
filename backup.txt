@@ -4,6 +4,7 @@ mybookmarks
 mytasks
 mystocks
 myip
+myvideo
 sda
 SimpleTextEncryption
 utils
