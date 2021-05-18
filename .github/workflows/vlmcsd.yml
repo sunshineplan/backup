@@ -34,12 +34,14 @@ jobs:
 
       - name: Build
         run: |
-          sudo apt install make gcc mingw-w64
+          sudo apt install mingw-w64
           curl -Lo- https://github.com/Wind4/vlmcsd/archive/svn1113.tar.gz | tar zx
-          make -C vlmcsd-svn1113
-          cp -r vlmcsd-svn1113/bin bin
-          make clean && CC=x86_64-w64-mingw32-gcc make -C vlmcsd-svn1113
-          cp vlmcsd-svn1113/bin/* bin
+          cd vlmcsd-svn1113
+          make
+          cp -r bin ../bin
+          make clean
+          CC=x86_64-w64-mingw32-gcc make
+          cp bin/* ../bin
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
@@ -48,8 +50,4 @@ jobs:
         with:
           tag_name: vlmcsd
           name: vlmcsd
-          files: |
-            vlmcs
-            vlmcsd
-            vlmcs.exe
-            vlmcsd.exe
+          files: bin/vlmcs*
