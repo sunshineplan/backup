@@ -1,0 +1,104 @@
+name: geph
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0,12 * * *'
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+        with:
+          path: repo
+
+      - name: Get latest tag
+        uses: actions/github-script@v4
+        id: get-tag
+        with:
+          result-encoding: string
+          script: |
+              const tags = await github.repos.listTags({
+                owner: 'geph-official',
+                repo: 'geph4',
+              })
+              return tags.data[0].name
+
+      - name: Check new version
+        id: check-version
+        run: |
+          tag=$(cat repo/version)
+          if [[ $tag != ${{ steps.get-tag.outputs.result }} ]]
+          then
+            echo ${{ steps.get-tag.outputs.result }} > repo/version
+            echo ::set-output name=new_version::1
+          else
+            echo ::set-output name=new_version::0
+          fi
+
+      - name: Build
+        if: steps.check-version.outputs.new_version == 1
+        run: |
+          git clone https://github.com/geph-official/geph4
+          cd geph4
+          cargo build --release --locked --manifest-path=geph4-client/Cargo.toml
+          mv target/release/geph4-client ..
+          cargo install cross
+          cross build --release --locked --target x86_64-pc-windows-gnu --manifest-path=geph4-client/Cargo.toml
+          mv target/x86_64-pc-windows-gnu/release/geph4-client.exe ..
+          cd ../repo
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add .
+          git commit -m "${{ steps.get-tag.outputs.result }}"
+          git push
+
+      - name: Delete Old Release
+        uses: actions/github-script@v4
+        with:
+          script: |
+            let release
+            try {
+              release = await github.repos.getReleaseByTag({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag: 'geph'
+              })
+            } catch(e) {
+              console.error(e)
+              return
+            }
+            await github.repos.deleteRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: release.data.id
+            })
+            await github.git.deleteRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: 'tags/geph'
+            })
+
+      - name: Create Release
+        if: steps.check-version.outputs.new_version == 1
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: geph
+          name: geph
+          files: geph4-client*
+
+      - name: Send notify
+        if: steps.check-version.outputs.new_version == 1
+        uses: dawidd6/action-send-mail@v2
+        with:
+          server_address: smtp.live.com
+          server_port: 587
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          subject: geph-${{ steps.get-tag.outputs.result }}
+          body: geph-${{ steps.get-tag.outputs.result }}
+          from: Github Actions
+          to: ${{ secrets.TO }}
