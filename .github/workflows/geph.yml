@@ -28,10 +28,10 @@ jobs:
       - name: Check new version
         id: check-version
         run: |
-          tag=$(cat repo/version)
+          tag=$(cat repo/geph)
           if [[ $tag != ${{ steps.get-tag.outputs.result }} ]]
           then
-            echo ${{ steps.get-tag.outputs.result }} > repo/version
+            echo ${{ steps.get-tag.outputs.result }} > repo/geph
             echo ::set-output name=new_version::1
           else
             echo ::set-output name=new_version::0
@@ -55,6 +55,7 @@ jobs:
           git push
 
       - name: Delete Old Release
+        if: steps.check-version.outputs.new_version == 1
         uses: actions/github-script@v4
         with:
           script: |
