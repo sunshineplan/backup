@@ -5,7 +5,7 @@ on:
     - cron: '0 0,12 * * *'
 
 jobs:
-  check:
+  geph:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -42,6 +42,7 @@ jobs:
         run: |
           git clone https://github.com/geph-official/geph4
           cd geph4
+          cargo update
           cargo build --release --locked --manifest-path=geph4-client/Cargo.toml
           mv target/release/geph4-client ..
           cargo install cross
