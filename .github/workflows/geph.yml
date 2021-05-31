@@ -43,8 +43,8 @@ jobs:
           git clone https://github.com/geph-official/geph4
           cd geph4
           cargo update
-          rustup target add x86_64-pc-windows-gnu
-          cargo build --release --locked --target x86_64-pc-windows-gnu --manifest-path=geph4-client/Cargo.toml
+          cargo install cross
+          cross build --release --locked --target x86_64-pc-windows-gnu --manifest-path=geph4-client/Cargo.toml
           mv target/x86_64-pc-windows-gnu/release/geph4-client.exe ..
           cd ../repo
           git config user.name github-actions
