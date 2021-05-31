@@ -6,7 +6,7 @@ on:
 
 jobs:
   geph:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2
@@ -43,12 +43,11 @@ jobs:
           git clone https://github.com/geph-official/geph4
           cd geph4
           cargo update
-          rustup target add aarch64-apple-darwin
-          cargo build --release --locked --target aarch64-apple-darwin --manifest-path=geph4-client/Cargo.toml
+          cargo build --release --locked --manifest-path=geph4-client/Cargo.toml
           mv target/release/geph4-client ..
-          #cargo install cross
-          #cross build --release --locked --target x86_64-pc-windows-gnu --manifest-path=geph4-client/Cargo.toml
-          #mv target/x86_64-pc-windows-gnu/release/geph4-client.exe ..
+          cargo install cross
+          cross build --release --locked --target x86_64-pc-windows-gnu --manifest-path=geph4-client/Cargo.toml
+          mv target/x86_64-pc-windows-gnu/release/geph4-client.exe ..
           cd ../repo
           git config user.name github-actions
           git config user.email github-actions@github.com
