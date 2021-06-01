@@ -8,10 +8,10 @@ jobs:
     steps:
       - name: Build
         run: |
-          sudo apt install mingw-w64
+          sudo apt install mingw-w64 gcc-8-aarch64-linux-gnu
           git clone https://github.com/Wind4/vlmcsd
           cd vlmcsd
-          make
+          CC=aarch64-linux-gnu-gcc-8 make
           cp -r bin ../bin
           make clean
           CC=x86_64-w64-mingw32-gcc make
