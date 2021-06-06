@@ -8,17 +8,16 @@ jobs:
     steps:
       - name: Build
         run: |
-          sudo apt install mingw-w64 gcc-8-aarch64-linux-gnu
+          mkdir output
+          sudo apt install mingw-w64
           git clone https://github.com/Wind4/vlmcsd
           cd vlmcsd
+          tar cvzf ../output/vlmcsd.tar.gz *
           make
-          cp -r bin ../bin
-          make clean
-          PROGRAM_NAME=bin/vlmcsd-macos CLIENT_NAME=bin/vlmcs-macos CC=aarch64-linux-gnu-gcc-8 make
-          cp bin/* ../bin
+          cp bin/* ../output
           make clean
           PROGRAM_NAME=bin/vlmcsd-windows CLIENT_NAME=bin/vlmcs-windows CC=x86_64-w64-mingw32-gcc make
-          cp bin/* ../bin
+          cp bin/* ../output
 
       - name: Delete Old Release
         uses: actions/github-script@v4
@@ -53,4 +52,4 @@ jobs:
         with:
           tag_name: vlmcsd
           name: vlmcsd
-          files: bin/vlmcs*
+          files: output/vlmcs*
