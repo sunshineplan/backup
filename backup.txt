@@ -11,6 +11,7 @@ imgconv
 gohttp
 service
 stock
+hlsdl
 metadata
 srce
 olms
