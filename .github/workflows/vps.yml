@@ -14,7 +14,7 @@ jobs:
         with:
           result-encoding: string
           script: |
-            const request = github.request.defaults({ headers: { Authorization: 'Bearer ${{ secrets.VPS_TOKEN }}' } });
+            const request = github.request.defaults({ headers: { authorization: 'Bearer ${{ secrets.VPS_TOKEN }}' } });
             const resp = await request('https://api.vpsserver.com/v1/servers.json')
             const result = []
             for (const server of resp.servers) {
