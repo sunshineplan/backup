@@ -1,0 +1,44 @@
+name: vps
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 16 * * *'
+
+jobs:
+  vps:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get Bandwidth Usage
+        id: usage
+        uses: actions/github-script@v4
+        with:
+          result-encoding: string
+          script: |
+            const headers = { 'Content-Type': 'application/json', Authorization: 'Bearer ${{ secrets.VPS_TOKEN }}' }
+            const resp = await fetch('https://api.vpsserver.com/v1/servers.json', { headers })
+            const json = await resp.json()
+            const result = []
+            for (const server of json.servers) {
+              const resp = await fetch(`https://api.vpsserver.com/v1/servers/${server.id}.json`, { headers })
+              const json = await resp.json()
+              const label = json.server.label
+              const bandwidth_used = json.server.bandwidth_used/1024/1024
+              result.push(`${label}: ${bandwidth_used}`)
+            }
+            return result.join('\n')
+
+      - name: Date
+        id: date
+        run: echo "::set-output name=date::$(TZ=CST date +'%Y-%m-%d')"
+
+      - name: Send backup email
+        uses: dawidd6/action-send-mail@v2
+        with:
+          server_address: smtp.live.com
+          server_port: 587
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          subject: VPS bandwidth usage-${{ steps.date.outputs.date }}
+          body: ${{steps.usage.outputs.result}}
+          from: Github Actions
+          to: ${{ secrets.TO }}
