@@ -13,12 +13,12 @@ jobs:
         uses: actions/github-script@v4
         with:
           result-encoding: string
+          github-token: Bearer ${{ secrets.VPS_TOKEN }}
           script: |
-            const request = github.request.defaults({ headers: { authorization: 'Bearer ${{ secrets.VPS_TOKEN }}' } });
-            const resp = await request('https://api.vpsserver.com/v1/servers.json')
+            const resp = await github.request('https://api.vpsserver.com/v1/servers.json')
             const result = []
             for (const server of resp.servers) {
-              const resp = await request(`https://api.vpsserver.com/v1/servers/${server.id}.json`)
+              const resp = await github.request(`https://api.vpsserver.com/v1/servers/${server.id}.json`)
               const label = resp.server.label
               const bandwidth_used = resp.server.bandwidth_used/1024/1024
               result.push(`${label}: ${bandwidth_used}`)
