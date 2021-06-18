@@ -19,7 +19,7 @@ jobs:
           echo "::set-output name=date::$(TZ=CST date +'%Y-%m-%d')"
 
       - name: Send backup email
-        uses: dawidd6/action-send-mail@v2
+        uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.live.com
           server_port: 587
