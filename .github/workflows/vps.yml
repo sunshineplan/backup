@@ -17,7 +17,7 @@ jobs:
           script: |
             const resp = await github.request('https://api.vpsserver.com/v1/servers.json')
             const result = []
-            console.log(resp.servers)
+            console.log(resp)
             for (const server of resp.servers) {
               const resp = await github.request(`https://api.vpsserver.com/v1/servers/${server.id}.json`)
               const label = resp.server.label
