@@ -36,7 +36,7 @@ jobs:
           server_port: 587
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
-          subject: VPS bandwidth usage-${{ steps.date.outputs.date }}
+          subject: VPS Bandwidth Usage - ${{ steps.date.outputs.date }}
           body: ${{steps.usage.outputs.result}}
           from: Github Actions
           to: ${{ secrets.TO }}
