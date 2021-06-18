@@ -14,11 +14,11 @@ jobs:
         with:
           result-encoding: string
           script: |
-            const headers = { Authorization: 'Bearer ${{ secrets.VPS_TOKEN }}' }
-            const resp = await github.request('https://api.vpsserver.com/v1/servers.json', { headers })
+            const request = github.request.defaults({ headers: { Authorization: 'Bearer ${{ secrets.VPS_TOKEN }}' } });
+            const resp = await request('https://api.vpsserver.com/v1/servers.json')
             const result = []
             for (const server of resp.servers) {
-              const resp = await github.request(`https://api.vpsserver.com/v1/servers/${server.id}.json`, { headers })
+              const resp = await request(`https://api.vpsserver.com/v1/servers/${server.id}.json`)
               const label = resp.server.label
               const bandwidth_used = resp.server.bandwidth_used/1024/1024
               result.push(`${label}: ${bandwidth_used}`)
