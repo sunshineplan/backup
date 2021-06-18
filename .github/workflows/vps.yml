@@ -17,11 +17,10 @@ jobs:
           script: |
             const resp = await github.request('https://api.vpsserver.com/v1/servers.json')
             const result = []
-            console.log(resp)
-            for (const server of resp.servers) {
+            for (const server of resp.data.servers) {
               const resp = await github.request(`https://api.vpsserver.com/v1/servers/${server.id}.json`)
-              const label = resp.server.label
-              const bandwidth_used = resp.server.bandwidth_used/1024/1024
+              const label = resp.data.server.label
+              const bandwidth_used = resp.data.server.bandwidth_used/1024/1024
               result.push(`${label}: ${bandwidth_used}`)
             }
             return result.join('\n')
