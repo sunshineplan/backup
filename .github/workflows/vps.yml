@@ -27,7 +27,7 @@ jobs:
 
       - name: Date
         id: date
-        run: echo "::set-output name=date::$(TZ=CST date +'%Y-%m-%d')"
+        run: echo "::set-output name=date::$(TZ=Asia/Shanghai date +'%Y-%m-%d')"
 
       - name: Send backup email
         uses: dawidd6/action-send-mail@v3

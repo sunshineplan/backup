@@ -16,7 +16,7 @@ jobs:
         run: |
           xargs -a database -I# mongodump --uri="${{ secrets.MONGODB_URI }}/#" --gzip --archive=#.bak
           zip -9vr database.zip *.bak
-          echo "::set-output name=date::$(TZ=CST date +'%Y-%m-%d')"
+          echo "::set-output name=date::$(TZ=Asia/Shanghai date +'%Y-%m-%d')"
 
       - name: Send backup email
         uses: dawidd6/action-send-mail@v3
