@@ -28,5 +28,5 @@ jobs:
           subject: Database Backup-${{ steps.backup.outputs.date }}
           body: Database Backup
           from: Github Actions
-          to: ${{ secrets.USERNAME }}
+          to: ${{ secrets.TO }}
           attachments: database.zip
