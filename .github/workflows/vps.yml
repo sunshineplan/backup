@@ -15,7 +15,7 @@ jobs:
           result-encoding: string
           github-token: Bearer ${{ secrets.VPS_TOKEN }}
           script: |
-            const resp = await github.request('https://api.vpsserver.com/v1/servers.json')
+            let resp = await github.request('https://api.vpsserver.com/v1/servers.json')
             const result = []
             for (const server of resp.data.servers) {
               const resp = await github.request(`https://api.vpsserver.com/v1/servers/${server.id}.json`)
@@ -23,6 +23,10 @@ jobs:
               const bandwidth_used = resp.data.server.bandwidth_used/1024/1024
               result.push(`${label}: ${bandwidth_used}`)
             }
+
+            resp = await github.request('https://api.vpsserver.com/v1/user.json')
+            result.push(`\nbalance: $${resp.data.user.balance}`)
+
             return result.join('\n')
 
       - name: Date
