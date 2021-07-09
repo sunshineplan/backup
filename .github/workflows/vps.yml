@@ -8,7 +8,7 @@ jobs:
   vps:
     runs-on: ubuntu-latest
     steps:
-      - name: Get Bandwidth Usage
+      - name: Get Usage
         id: usage
         uses: actions/github-script@v4
         with:
@@ -30,7 +30,10 @@ jobs:
 
       - name: Date
         id: date
-        run: echo "::set-output name=date::$(TZ=PRC date +'%Y-%m-%d')"
+        run: |
+          echo ${{ steps.usage.outputs.result }}
+          echo ${{ steps.usage.outputs.result.balance }}
+          echo "::set-output name=date::$(TZ=PRC date +'%Y-%m-%d')"
 
       - name: Send backup email
         uses: dawidd6/action-send-mail@v3
