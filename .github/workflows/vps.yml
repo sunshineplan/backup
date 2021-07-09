@@ -12,7 +12,6 @@ jobs:
         id: usage
         uses: actions/github-script@v4
         with:
-          result-encoding: string
           github-token: Bearer ${{ secrets.VPS_TOKEN }}
           script: |
             let resp = await github.request('https://api.vpsserver.com/v1/servers.json')
@@ -25,9 +24,9 @@ jobs:
             }
 
             resp = await github.request('https://api.vpsserver.com/v1/user.json')
-            result.push(`\nbalance: $${resp.data.user.balance}`)
+            const balance = resp.data.user.balance
 
-            return result.join('\n')
+            return { body: result.join('\n'), balance }
 
       - name: Date
         id: date
@@ -40,7 +39,7 @@ jobs:
           server_port: 587
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
-          subject: VPS Bandwidth Usage - ${{ steps.date.outputs.date }}
-          body: ${{steps.usage.outputs.result}}
+          subject: 'VPS Usage - ${{ steps.date.outputs.date }} - Balance: $${{ steps.usage.outputs.result.balance }}'
+          body: ${{ steps.usage.outputs.result.body }}
           from: Github Actions
           to: ${{ secrets.TO }}
