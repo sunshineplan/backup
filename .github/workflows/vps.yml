@@ -30,10 +30,7 @@ jobs:
 
       - name: Date
         id: date
-        run: |
-          echo ${{ steps.usage.outputs.result }}
-          echo ${{ steps.usage.outputs.result.balance }}
-          echo "::set-output name=date::$(TZ=PRC date +'%Y-%m-%d')"
+        run: echo "::set-output name=date::$(TZ=PRC date +'%Y-%m-%d')"
 
       - name: Send backup email
         uses: dawidd6/action-send-mail@v3
@@ -42,7 +39,7 @@ jobs:
           server_port: 587
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
-          subject: 'VPS Usage - ${{ steps.date.outputs.date }} - Balance: $${{ steps.usage.outputs.result.balance }}'
-          body: ${{ steps.usage.outputs.result.body }}
+          subject: 'VPS Usage - ${{ steps.date.outputs.date }} - Balance: $${{ fromJSON(steps.usage.outputs.result).balance }}'
+          body: ${{ fromJSON(steps.usage.outputs.result).body }}
           from: Github Actions
           to: ${{ secrets.TO }}
