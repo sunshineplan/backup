@@ -43,10 +43,10 @@ jobs:
           git clone https://github.com/geph-official/geph4
           cd geph4
           cargo update
-          cargo build --release --locked --manifest-path=geph4-client/Cargo.toml
+          cargo build --release --locked
           mv target/release/geph4-client ..
           cargo install cross
-          cross build --release --locked --target x86_64-pc-windows-gnu --manifest-path=geph4-client/Cargo.toml
+          cross build --release --locked --target x86_64-pc-windows-gnu
           mv target/x86_64-pc-windows-gnu/release/geph4-client.exe ..
           cd ../repo
           git config user.name github-actions
