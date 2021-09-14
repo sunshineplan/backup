@@ -96,7 +96,7 @@ jobs:
         if: steps.check-version.outputs.new_version == 1
         uses: dawidd6/action-send-mail@v3
         with:
-          server_address: smtp.live.com
+          server_address: ${{ secrets.SERVER }}
           server_port: 587
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}

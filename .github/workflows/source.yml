@@ -15,18 +15,18 @@ jobs:
         id : backup
         run: |
           xargs -a backup -I@ curl -Lo @.zip https://github.com/sunshineplan/@/archive/main.zip
-          zip -9vr source.zip *.zip
+          zip -9vrP ${{ secrets.PASSWORD }} source.zip *.zip
           echo "::set-output name=date::$(TZ=PRC date +'%Y-%m-%d')"
 
       - name: Send backup email
         uses: dawidd6/action-send-mail@v3
         with:
-          server_address: smtp.live.com
+          server_address: ${{ secrets.SERVER }}
           server_port: 587
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
           subject: Source Code Backup-${{ steps.backup.outputs.date }}
           body: Source Code Backup
           from: Github Actions
-          to: ${{ secrets.USERNAME }}
+          to: ${{ secrets.TO }}
           attachments: source.zip
