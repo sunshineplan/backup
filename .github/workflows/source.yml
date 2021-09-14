@@ -15,7 +15,9 @@ jobs:
         id : backup
         run: |
           mkdir -p source
-          xargs -a backup -I@ curl -Lo- https://github.com/sunshineplan/@/archive/main.tar.gz | tar zxC source
+          for repo in $(cat backup); do
+            curl -Lo- https://github.com/sunshineplan/$repo/archive/main.tar.gz | tar zxC source
+          done
           cd source
           zip -9vr ../source *
           echo "::set-output name=date::$(TZ=PRC date +'%Y-%m-%d')"
