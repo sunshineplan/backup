@@ -44,4 +44,4 @@ jobs:
           body: file://backup
           from: Github Actions
           to: ${{ secrets.TO }}
-          attachments: codebackup
+          attachments: ./codebackup
