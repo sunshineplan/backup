@@ -26,7 +26,9 @@ jobs:
           cd source
           zip -9vr ../code *
           cd ..
-          zip -9vP ${{ secrets.PASSWORD }} source code.zip
+          mv code.zip code
+          zip -9vP ${{ secrets.PASSWORD }} source code
+          mv source.zip codebackup
           #go mod download
           #go run source.go -key ${{ secrets.PASSWORD }}
           echo "::set-output name=date::$(TZ=PRC date +'%Y-%m-%d')"
@@ -42,4 +44,4 @@ jobs:
           body: file://backup
           from: Github Actions
           to: ${{ secrets.TO }}
-          attachments: source.zip
+          attachments: codebackup
