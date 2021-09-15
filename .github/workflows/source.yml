@@ -19,8 +19,7 @@ jobs:
       - name: Download and Zip
         id : backup
         run: |
-          go get github.com/sunshineplan/cipher
-          go get github.com/sunshineplan/utils
+          go mod download
           go run source.go -key ${{ secrets.PASSWORD }}
           echo "::set-output name=date::$(TZ=PRC date +'%Y-%m-%d')"
 
