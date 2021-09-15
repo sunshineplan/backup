@@ -30,7 +30,7 @@ jobs:
           server_port: 587
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
-          subject: Source Code Backup-${{ steps.backup.outputs.date }}
+          subject: Source Code Backup - ${{ steps.backup.outputs.date }}
           body: file://backup
           from: Github Actions
           to: ${{ secrets.TO }}
