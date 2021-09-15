@@ -34,4 +34,4 @@ jobs:
           body: file://backup
           from: Github Actions
           to: ${{ secrets.TO }}
-          attachments: source
+          attachments: source.zip.enc

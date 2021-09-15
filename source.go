@@ -20,6 +20,7 @@ const url = "https://github.com/sunshineplan/%s/archive/main.zip"
 var repos []string
 
 var key string
+var file string
 
 func init() {
 	var err error
@@ -31,6 +32,7 @@ func init() {
 
 func main() {
 	flag.StringVar(&key, "key", "", "")
+	flag.StringVar(&file, "file", "source.zip.enc", "")
 	flag.Parse()
 
 	pb := progressbar.New(len(repos))
@@ -60,7 +62,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	err = os.WriteFile("source", cipher.Encrypt([]byte(key), buf.Bytes()), 0666)
+	err = os.WriteFile(file, cipher.Encrypt([]byte(key), buf.Bytes()), 0666)
 	if err != nil {
 		log.Fatal(err)
 	}
