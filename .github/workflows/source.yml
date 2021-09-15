@@ -11,15 +11,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+    - name: Setup Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: '1.x'
+
       - name: Download and Zip
         id : backup
         run: |
-          mkdir -p source
-          for repo in $(cat backup); do
-            curl -Lo- https://github.com/sunshineplan/$repo/archive/main.tar.gz | tar zxC source
-          done
-          cd source
-          zip -9vr ../source *
+          go get github.com/sunshineplan/cipher
+          go get github.com/sunshineplan/utils
+          go run source.go -key ${{ secrets.PASSWORD }}
           echo "::set-output name=date::$(TZ=PRC date +'%Y-%m-%d')"
 
       - name: Send backup email
@@ -30,7 +32,7 @@ jobs:
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
           subject: Source Code Backup-${{ steps.backup.outputs.date }}
-          body: Source Code Backup
+          body: file://backup
           from: Github Actions
           to: ${{ secrets.TO }}
-          attachments: source.zip
+          attachments: source
