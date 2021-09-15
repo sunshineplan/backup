@@ -24,9 +24,9 @@ jobs:
             curl -Lo- https://github.com/sunshineplan/$repo/archive/main.tar.gz | tar zxC source
           done
           cd source
-          zip -9vrP ${{ secrets.PASSWORD }} ../source *
+          zip -9vr ../code *
           cd ..
-          zip -9v source source
+          zip -9vP ${{ secrets.PASSWORD }} source code.zip
           #go mod download
           #go run source.go -key ${{ secrets.PASSWORD }}
           echo "::set-output name=date::$(TZ=PRC date +'%Y-%m-%d')"
