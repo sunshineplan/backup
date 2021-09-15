@@ -32,7 +32,7 @@ func init() {
 
 func main() {
 	flag.StringVar(&key, "key", "", "")
-	flag.StringVar(&file, "file", "source.zip.enc", "")
+	flag.StringVar(&file, "file", "source.code", "")
 	flag.Parse()
 
 	pb := progressbar.New(len(repos))
