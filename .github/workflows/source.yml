@@ -19,8 +19,16 @@ jobs:
       - name: Download and Zip
         id : backup
         run: |
-          go mod download
-          go run source.go -key ${{ secrets.PASSWORD }}
+          mkdir -p source
+          for repo in $(cat backup); do
+            curl -Lo- https://github.com/sunshineplan/$repo/archive/main.tar.gz | tar zxC source
+          done
+          cd source
+          zip -9vrP ${{ secrets.PASSWORD }} ../source *
+          cd ..
+          zip -9v source source
+          #go mod download
+          #go run source.go -key ${{ secrets.PASSWORD }}
           echo "::set-output name=date::$(TZ=PRC date +'%Y-%m-%d')"
 
       - name: Send backup email
@@ -34,4 +42,4 @@ jobs:
           body: file://backup
           from: Github Actions
           to: ${{ secrets.TO }}
-          attachments: source.zip.enc
+          attachments: source.zip
