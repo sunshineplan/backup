@@ -19,7 +19,7 @@ jobs:
         with:
           result-encoding: string
           script: |
-              const tags = await github.repos.listTags({
+              const tags = await github.rest.repos.listTags({
                 owner: 'geph-official',
                 repo: 'geph4',
               })
@@ -62,7 +62,7 @@ jobs:
           script: |
             let release
             try {
-              release = await github.repos.getReleaseByTag({
+              release = await github.rest.repos.getReleaseByTag({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 tag: 'geph'
@@ -71,12 +71,12 @@ jobs:
               console.error(e)
               return
             }
-            await github.repos.deleteRelease({
+            await github.rest.repos.deleteRelease({
               owner: context.repo.owner,
               repo: context.repo.repo,
               release_id: release.data.id
             })
-            await github.git.deleteRef({
+            await github.rest.git.deleteRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
               ref: 'tags/geph'
