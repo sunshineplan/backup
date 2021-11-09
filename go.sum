@@ -12,12 +12,12 @@ github.com/pschlump/godebug v1.0.1 h1:oqIIpV3mY+0ZPOmRvEA4evu9NXbTXybr3q4NMv1MCK
 github.com/pschlump/godebug v1.0.1/go.mod h1:2Xc0mMFygPm2NYRpRUDChvUjh+91oIxDPRB1OAL8XfE=
 github.com/pschlump/json v0.0.0-20180316172947-0d2e6a308e08 h1:vlHZH1VS4Wt4C8Jk1y8C6UqnpT54RuKWkV8iRc9Bwp4=
 github.com/pschlump/json v0.0.0-20180316172947-0d2e6a308e08/go.mod h1:MyeKNxcsYS/AaCqIp6DgPdaE/4NVH49OJVCnQsRoevI=
-github.com/sunshineplan/cipher v1.0.3 h1:sttJRhSdlMB4fwguLFA8jqwx09Bw0goYBG82vm5v+Vo=
-github.com/sunshineplan/cipher v1.0.3/go.mod h1:WKL1gI8mVJ1fgS/3xJZuK0xqlCE7+lBlNKqnnUOUBME=
+github.com/sunshineplan/cipher v1.0.4 h1:ZXvY1wqexr5uVQCYi5dRTiPFcHmsPwj4hR7GZLEw/uc=
+github.com/sunshineplan/cipher v1.0.4/go.mod h1:OENrTLa23VKXHetbsBItaxcGja8cPH7p5u86f3cRvT8=
 github.com/sunshineplan/utils v0.0.19 h1:XTs7a5D9TgNXeP09tKKi7syv178o3eyITKI4tlRgWqU=
 github.com/sunshineplan/utils v0.0.19/go.mod h1:qMSfTzU5OKJ+CjP/JMP/s+XBb5AduLU820yQbarZzW0=
-golang.org/x/crypto v0.0.0-20210817164053-32db794688a5 h1:HWj/xjIHfjYU5nVXpTM0s39J9CbLn7Cc5a7IC5rwsMQ=
-golang.org/x/crypto v0.0.0-20210817164053-32db794688a5/go.mod h1:GvvjBRRGRdwPK5ydBHafDWAxML/pGHZbMvKqRZ5+Abc=
+golang.org/x/crypto v0.0.0-20211108221036-ceb1ce70b4fa h1:idItI2DDfCokpg0N51B2VtiLdJ4vAuXC9fnCb2gACo4=
+golang.org/x/crypto v0.0.0-20211108221036-ceb1ce70b4fa/go.mod h1:GvvjBRRGRdwPK5ydBHafDWAxML/pGHZbMvKqRZ5+Abc=
 golang.org/x/net v0.0.0-20210226172049-e18ecbb05110/go.mod h1:m0MpNAwzfU5UDzcl9v0D8zg8gWTRqZa9RBIspLL5mdg=
 golang.org/x/sys v0.0.0-20190222072716-a9d3bda3a223/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
 golang.org/x/sys v0.0.0-20201119102817-f84b799fce68/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
