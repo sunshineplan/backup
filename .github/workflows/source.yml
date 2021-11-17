@@ -29,8 +29,6 @@ jobs:
           mv code.zip code
           zip -9vP ${{ secrets.PASSWORD }} source code
           mv source.zip source.code
-          #go mod download
-          #go run source.go -key ${{ secrets.PASSWORD }}
           echo "::set-output name=date::$(TZ=PRC date +'%Y-%m-%d')"
 
       - name: Send backup email

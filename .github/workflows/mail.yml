@@ -1,0 +1,23 @@
+name: Forward Mail
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '*/15 * * * *'
+
+jobs:
+  mail:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '1.x'
+
+      - name: Run
+        run: |
+          go run forwardMail.go -addr ${{ secrets.ADDR }} -domain ${{ secrets.DOMAIN }} \
+          -user ${{ secrets.USER }} -pass ${{ secrets.PASS }} -to ${{ secrets.TO }} \
+          -host ${{ secrets.SERVER }} -mail ${{ secrets.USERNAME }} -password ${{ secrets.PASSWORD }}
