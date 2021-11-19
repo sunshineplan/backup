@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"flag"
 	"log"
+	"net"
 	"os"
 	"path/filepath"
 	"strings"
@@ -14,6 +15,7 @@ import (
 	"github.com/sunshineplan/utils/mail"
 	"github.com/sunshineplan/utils/pop3"
 	"github.com/vharitonsky/iniflags"
+	"golang.org/x/net/publicsuffix"
 )
 
 var (
@@ -44,6 +46,17 @@ func main() {
 	iniflags.SetAllowMissingConfigFile(true)
 	iniflags.SetAllowUnknownFlags(true)
 	iniflags.Parse()
+
+	if *domain == "" {
+		host, _, err := net.SplitHostPort(*addr)
+		if err != nil {
+			log.Fatal(err)
+		}
+		*domain, err = publicsuffix.EffectiveTLDPlusOne(host)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
 
 	if err := forwardMails(strings.Split(*to, ",")); err != nil {
 		log.Fatal(err)

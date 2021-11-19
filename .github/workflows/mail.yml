@@ -18,6 +18,5 @@ jobs:
 
       - name: Run
         run: |
-          go run forwardMail.go -addr ${{ secrets.ADDR }} -domain ${{ secrets.DOMAIN }} \
-          -user ${{ secrets.USER }} -pass ${{ secrets.PASS }} -to ${{ secrets.TO }} \
-          -host ${{ secrets.SERVER }} -mail ${{ secrets.USERNAME }} -password ${{ secrets.PASSWORD }}
+          go run forwardMail.go -addr ${{ secrets.ADDR }} -user ${{ secrets.USER }} -pass ${{ secrets.PASS }} \
+          -to ${{ secrets.TO }} -host ${{ secrets.SERVER }} -mail ${{ secrets.USERNAME }} -password ${{ secrets.PASSWORD }}
