@@ -3,10 +3,10 @@ module backup
 go 1.17
 
 require (
-	github.com/Azure/go-ntlmssp v0.0.0-20200615164410-66371956d46c
-	github.com/sunshineplan/utils v0.0.26
+	github.com/Azure/go-ntlmssp v0.0.0-20211209120228-48547f28849e
+	github.com/sunshineplan/utils v0.0.27
 	github.com/vharitonsky/iniflags v0.0.0-20180513140207-a33cd0b5f3de
-	golang.org/x/net v0.0.0-20211118161319-6a13c67c3ce4
+	golang.org/x/net v0.0.0-20211209124913-491a49abca63
 )
 
-require golang.org/x/crypto v0.0.0-20211117183948-ae814b36b871 // indirect
+require golang.org/x/crypto v0.0.0-20211209193657-4570a0811e8b // indirect

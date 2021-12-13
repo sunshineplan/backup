@@ -39,7 +39,7 @@ func init() {
 }
 
 func main() {
-	flag.StringVar(&dialer.Host, "host", "", "Mail Host Server")
+	flag.StringVar(&dialer.Server, "server", "", "Mail Host Server")
 	flag.StringVar(&dialer.Account, "mail", "", "Mail Account")
 	flag.StringVar(&dialer.Password, "password", "", "Mail Account Password")
 	iniflags.SetConfigFile(filepath.Join(filepath.Dir(self), "config.ini"))
