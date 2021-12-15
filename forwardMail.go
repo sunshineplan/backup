@@ -15,22 +15,26 @@ import (
 
 	"github.com/Azure/go-ntlmssp"
 	"github.com/sunshineplan/utils/httpproxy"
-	"github.com/sunshineplan/utils/mail"
 	"github.com/sunshineplan/utils/pop3"
+	"github.com/sunshineplan/utils/smtp"
 	"github.com/vharitonsky/iniflags"
 	"golang.org/x/net/publicsuffix"
 )
 
 var (
-	addr   = flag.String("addr", "", "Address")
-	domain = flag.String("domain", "", "Domain")
-	user   = flag.String("user", "", "Username")
-	pass   = flag.String("pass", "", "Password")
-	to     = flag.String("to", "", "Mail To")
-	proxy  = flag.String("proxy", "", "Proxy")
+	addr     = flag.String("addr", "", "Address")
+	domain   = flag.String("domain", "", "Domain")
+	user     = flag.String("user", "", "Username")
+	pass     = flag.String("pass", "", "Password")
+	server   = flag.String("server", "", "Mail Host Server")
+	account  = flag.String("mail", "", "Mail Account")
+	password = flag.String("password", "", "Mail Account Password")
+	to       = flag.String("to", "", "Mail To")
+	proxy    = flag.String("proxy", "", "Proxy")
 )
 
-var dialer = &mail.Dialer{Port: 587}
+var client *smtp.Client
+var u *url.URL
 
 var self string
 
@@ -43,9 +47,6 @@ func init() {
 }
 
 func main() {
-	flag.StringVar(&dialer.Server, "server", "", "Mail Host Server")
-	flag.StringVar(&dialer.Account, "mail", "", "Mail Account")
-	flag.StringVar(&dialer.Password, "password", "", "Mail Account Password")
 	iniflags.SetConfigFile(filepath.Join(filepath.Dir(self), "config.ini"))
 	iniflags.SetAllowMissingConfigFile(true)
 	iniflags.SetAllowUnknownFlags(true)
@@ -62,27 +63,56 @@ func main() {
 		}
 	}
 
-	if err := forwardMails(strings.Split(*to, ",")); err != nil {
+	var err error
+	if *proxy == "" {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+		defer cancel()
+
+		client, err = smtp.Dial(ctx, *server+":587")
+	} else {
+		u, err = url.Parse(*proxy)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		var conn net.Conn
+		conn, err = httpproxy.New(u, nil).Dial("tcp", *server+":587")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		client, err = smtp.NewClient(conn, *server)
+	}
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if ok, _ := client.Extension("STARTTLS"); ok {
+		if err = client.StartTLS(&tls.Config{ServerName: *server}); err != nil {
+			log.Fatal(err)
+		}
+	}
+	if err = client.Auth(smtp.Auth{Username: *account, Password: *password, Server: *server}); err != nil {
+		log.Fatal(err)
+	}
+
+	if err = forwardMails(strings.Split(*to, ",")); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func forwardMails(to []string) (err error) {
+func forwardMails(to []string) error {
 	var c *pop3.Client
 	if *proxy == "" {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 		defer cancel()
 
+		var err error
 		c, err = pop3.DialTLS(ctx, *addr)
-		if err != nil {
-			return
-		}
-	} else {
-		u, err := url.Parse(*proxy)
 		if err != nil {
 			return err
 		}
-
+	} else {
 		conn, err := httpproxy.New(u, nil).Dial("tcp", *addr)
 		if err != nil {
 			return err
@@ -100,36 +130,36 @@ func forwardMails(to []string) (err error) {
 	}
 	defer c.Quit()
 
-	if _, err = c.Cmd("AUTH NTLM", false); err != nil {
-		return
+	if _, err := c.Cmd("AUTH NTLM", false); err != nil {
+		return err
 	}
 
 	b, err := ntlmssp.NewNegotiateMessage(*domain, "")
 	if err != nil {
-		return
+		return err
 	}
 
 	s, err := c.Cmd(base64.StdEncoding.EncodeToString(b), false)
 	if err != nil {
-		return
+		return err
 	}
 
 	b, err = base64.StdEncoding.DecodeString(s)
 	if err != nil {
-		return
+		return err
 	}
 	b, err = ntlmssp.ProcessChallenge(b, *user, *pass)
 	if err != nil {
-		return
+		return err
 	}
 
 	if _, err = c.Cmd(base64.StdEncoding.EncodeToString(b), false); err != nil {
-		return
+		return err
 	}
 
 	count, _, err := c.Stat()
 	if err != nil {
-		return
+		return err
 	}
 
 	for id := 1; id <= count; id++ {
@@ -139,7 +169,7 @@ func forwardMails(to []string) (err error) {
 			continue
 		}
 
-		if err := sendMail([]byte(s), to); err != nil {
+		if err := client.SendMail(*account, to, strings.NewReader(s)); err != nil {
 			log.Print(err)
 			continue
 		}
@@ -149,12 +179,5 @@ func forwardMails(to []string) (err error) {
 		}
 	}
 
-	return
-}
-
-func sendMail(b []byte, to []string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
-	defer cancel()
-
-	return dialer.SendMail(ctx, dialer.Account, to, b)
+	return nil
 }
