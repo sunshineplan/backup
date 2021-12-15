@@ -2,16 +2,19 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/base64"
 	"flag"
 	"log"
 	"net"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
 
 	"github.com/Azure/go-ntlmssp"
+	"github.com/sunshineplan/utils/httpproxy"
 	"github.com/sunshineplan/utils/mail"
 	"github.com/sunshineplan/utils/pop3"
 	"github.com/vharitonsky/iniflags"
@@ -24,6 +27,7 @@ var (
 	user   = flag.String("user", "", "Username")
 	pass   = flag.String("pass", "", "Password")
 	to     = flag.String("to", "", "Mail To")
+	proxy  = flag.String("proxy", "", "Proxy")
 )
 
 var dialer = &mail.Dialer{Port: 587}
@@ -63,43 +67,69 @@ func main() {
 	}
 }
 
-func forwardMails(to []string) error {
-	c, err := pop3.NewClient(*addr, true)
-	if err != nil {
-		return err
+func forwardMails(to []string) (err error) {
+	var c *pop3.Client
+	if *proxy == "" {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+		defer cancel()
+
+		c, err = pop3.DialTLS(ctx, *addr)
+		if err != nil {
+			return
+		}
+	} else {
+		u, err := url.Parse(*proxy)
+		if err != nil {
+			return err
+		}
+
+		conn, err := httpproxy.New(u, nil).Dial("tcp", *addr)
+		if err != nil {
+			return err
+		}
+
+		host, _, err := net.SplitHostPort(*addr)
+		if err != nil {
+			return err
+		}
+
+		c, err = pop3.NewClient(tls.Client(conn, &tls.Config{ServerName: host}))
+		if err != nil {
+			return err
+		}
 	}
 	defer c.Quit()
 
-	if _, err := c.Cmd("AUTH NTLM", false); err != nil {
-		return err
+	if _, err = c.Cmd("AUTH NTLM", false); err != nil {
+		return
 	}
 
 	b, err := ntlmssp.NewNegotiateMessage(*domain, "")
 	if err != nil {
-		return err
+		return
 	}
 
 	s, err := c.Cmd(base64.StdEncoding.EncodeToString(b), false)
 	if err != nil {
-		return err
+		return
 	}
 
 	b, err = base64.StdEncoding.DecodeString(s)
 	if err != nil {
-		return err
+		return
 	}
 	b, err = ntlmssp.ProcessChallenge(b, *user, *pass)
 	if err != nil {
-		return err
+		return
 	}
 
-	if _, err := c.Cmd(base64.StdEncoding.EncodeToString(b), false); err != nil {
-		return err
+	if _, err = c.Cmd(base64.StdEncoding.EncodeToString(b), false); err != nil {
+		return
 	}
 
 	count, _, err := c.Stat()
 	if err != nil {
-		return err
+		return
 	}
 
 	for id := 1; id <= count; id++ {
@@ -119,7 +149,7 @@ func forwardMails(to []string) error {
 		}
 	}
 
-	return nil
+	return
 }
 
 func sendMail(b []byte, to []string) error {
