@@ -86,13 +86,9 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer client.Quit()
 
-	if ok, _ := client.Extension("STARTTLS"); ok {
-		if err = client.StartTLS(&tls.Config{ServerName: *server}); err != nil {
-			log.Fatal(err)
-		}
-	}
-	if err = client.Auth(smtp.Auth{Username: *account, Password: *password, Server: *server}); err != nil {
+	if err = client.Auth(&smtp.Auth{Username: *account, Password: *password, Server: *server}); err != nil {
 		log.Fatal(err)
 	}
 
@@ -169,7 +165,7 @@ func forwardMails(to []string) error {
 			continue
 		}
 
-		if err := client.SendMail(*account, to, strings.NewReader(s)); err != nil {
+		if err := client.Send(*account, to, []byte(s)); err != nil {
 			log.Print(err)
 			continue
 		}
