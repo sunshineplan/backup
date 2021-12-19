@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/Azure/go-ntlmssp"
@@ -33,8 +34,9 @@ var (
 	proxy    = flag.String("proxy", "", "Proxy")
 )
 
-var client *smtp.Client
+var smtpClient *smtp.Client
 var u *url.URL
+var once sync.Once
 
 var self string
 
@@ -65,31 +67,10 @@ func main() {
 
 	var err error
 	if *proxy == "" {
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
-		defer cancel()
-
-		client, err = smtp.Dial(ctx, *server+":587")
-	} else {
 		u, err = url.Parse(*proxy)
 		if err != nil {
 			log.Fatal(err)
 		}
-
-		var conn net.Conn
-		conn, err = httpproxy.New(u, nil).Dial("tcp", *server+":587")
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		client, err = smtp.NewClient(conn, *server)
-	}
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer client.Quit()
-
-	if err = client.Auth(&smtp.Auth{Username: *account, Password: *password, Server: *server}); err != nil {
-		log.Fatal(err)
 	}
 
 	if err = forwardMails(strings.Split(*to, ",")); err != nil {
@@ -98,13 +79,13 @@ func main() {
 }
 
 func forwardMails(to []string) error {
-	var c *pop3.Client
+	var pop3Client *pop3.Client
 	if *proxy == "" {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 		defer cancel()
 
 		var err error
-		c, err = pop3.DialTLS(ctx, *addr)
+		pop3Client, err = pop3.DialTLS(ctx, *addr)
 		if err != nil {
 			return err
 		}
@@ -119,14 +100,14 @@ func forwardMails(to []string) error {
 			return err
 		}
 
-		c, err = pop3.NewClient(tls.Client(conn, &tls.Config{ServerName: host}))
+		pop3Client, err = pop3.NewClient(tls.Client(conn, &tls.Config{ServerName: host}))
 		if err != nil {
 			return err
 		}
 	}
-	defer c.Quit()
+	defer pop3Client.Quit()
 
-	if _, err := c.Cmd("AUTH NTLM", false); err != nil {
+	if _, err := pop3Client.Cmd("AUTH NTLM", false); err != nil {
 		return err
 	}
 
@@ -135,7 +116,7 @@ func forwardMails(to []string) error {
 		return err
 	}
 
-	s, err := c.Cmd(base64.StdEncoding.EncodeToString(b), false)
+	s, err := pop3Client.Cmd(base64.StdEncoding.EncodeToString(b), false)
 	if err != nil {
 		return err
 	}
@@ -149,31 +130,58 @@ func forwardMails(to []string) error {
 		return err
 	}
 
-	if _, err = c.Cmd(base64.StdEncoding.EncodeToString(b), false); err != nil {
+	if _, err = pop3Client.Cmd(base64.StdEncoding.EncodeToString(b), false); err != nil {
 		return err
 	}
 
-	count, _, err := c.Stat()
+	count, _, err := pop3Client.Stat()
 	if err != nil {
 		return err
 	}
 
 	for id := 1; id <= count; id++ {
-		s, err := c.Retr(id)
+		s, err := pop3Client.Retr(id)
 		if err != nil {
 			log.Print(err)
 			continue
 		}
 
-		if err := client.Send(*account, to, []byte(s)); err != nil {
+		once.Do(connectSMTP)
+		if err := smtpClient.Send(*account, to, []byte(s)); err != nil {
 			log.Print(err)
 			continue
 		}
 
-		if err := c.Dele(id); err != nil {
+		if err := pop3Client.Dele(id); err != nil {
 			log.Print(err)
 		}
 	}
+	smtpClient.Quit()
 
 	return nil
+}
+
+func connectSMTP() {
+	var err error
+	if *proxy == "" {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+		defer cancel()
+
+		smtpClient, err = smtp.Dial(ctx, *server+":587")
+	} else {
+		var conn net.Conn
+		conn, err = httpproxy.New(u, nil).Dial("tcp", *server+":587")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		smtpClient, err = smtp.NewClient(conn, *server)
+	}
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if err = smtpClient.Auth(&smtp.Auth{Username: *account, Password: *password, Server: *server}); err != nil {
+		log.Fatal(err)
+	}
 }
