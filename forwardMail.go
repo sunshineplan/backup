@@ -66,7 +66,7 @@ func main() {
 	}
 
 	var err error
-	if *proxy == "" {
+	if *proxy != "" {
 		u, err = url.Parse(*proxy)
 		if err != nil {
 			log.Fatal(err)
