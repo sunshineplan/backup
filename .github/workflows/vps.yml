@@ -10,7 +10,7 @@ jobs:
     steps:
       - name: Get Usage
         id: usage
-        uses: actions/github-script@v5
+        uses: actions/github-script@v6
         with:
           github-token: Bearer ${{ secrets.VPS_TOKEN }}
           script: |
