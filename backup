@@ -6,6 +6,7 @@ cipher
 compare
 database
 feh
+forwarder
 go-clc
 gohttp
 hlsdl
