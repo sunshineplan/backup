@@ -1,7 +1,7 @@
 github.com/Azure/go-ntlmssp v0.0.0-20211209120228-48547f28849e h1:ZU22z/2YRFLyf/P4ZwUYSdNCWsMEI0VeyrFoI2rAhJQ=
 github.com/Azure/go-ntlmssp v0.0.0-20211209120228-48547f28849e/go.mod h1:chxPXzSsl7ZWRAuOIE23GDNzjWuZquvFlgA8xmpunjU=
-github.com/sunshineplan/utils v0.1.4 h1:p0uAI1ugowRogsSHvGNnyRcamwaq7CClUN0xAvtARtM=
-github.com/sunshineplan/utils v0.1.4/go.mod h1:HfKwfZdb8gYzo451GrkSqdNQE6xVRtdLJ6gZV5XRaC4=
+github.com/sunshineplan/utils v0.1.8 h1:X3SKvob7bXz/MLYplRSWZXUuAh3bPNmBj+nn3qz/UQM=
+github.com/sunshineplan/utils v0.1.8/go.mod h1:HfKwfZdb8gYzo451GrkSqdNQE6xVRtdLJ6gZV5XRaC4=
 github.com/sunshineplan/utils/httpproxy v1.0.4 h1:vbQQquf+rzqdOc+oq9VcDaW7bgtpwv6WADfyRotKrQA=
 github.com/sunshineplan/utils/httpproxy v1.0.4/go.mod h1:LQxsP0jaOqeROnwP2b9+d52jgYhGtWASehr8CsVRXtg=
 github.com/vharitonsky/iniflags v0.0.0-20180513140207-a33cd0b5f3de h1:fkw+7JkxF3U1GzQoX9h69Wvtvxajo5Rbzy6+YMMzPIg=
