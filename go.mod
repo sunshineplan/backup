@@ -1,13 +1,14 @@
 module backup
 
-go 1.18
+go 1.19
 
 require (
-	github.com/Azure/go-ntlmssp v0.0.0-20211209120228-48547f28849e
-	github.com/sunshineplan/utils v0.1.4
-	github.com/sunshineplan/utils/httpproxy v1.0.4
-	github.com/vharitonsky/iniflags v0.0.0-20180513140207-a33cd0b5f3de
-	golang.org/x/net v0.0.0-20220407224826-aac1ed45d8e3
+	github.com/sunshineplan/forwarder v1.0.0
+	github.com/sunshineplan/utils v0.1.10
 )
 
-require golang.org/x/crypto v0.0.0-20220408190544-5352b0902921 // indirect
+require (
+	github.com/Azure/go-ntlmssp v0.0.0-20220621081337-cb9428e4ac1e // indirect
+	golang.org/x/crypto v0.1.0 // indirect
+	golang.org/x/net v0.1.0 // indirect
+)
