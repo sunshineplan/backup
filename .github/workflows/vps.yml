@@ -30,7 +30,7 @@ jobs:
 
       - name: Date
         id: date
-        run: echo "::set-output name=date::$(TZ=PRC date +'%Y-%m-%d')"
+        run: echo "date=$(TZ=PRC date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
       - name: Send backup email
         uses: dawidd6/action-send-mail@v3

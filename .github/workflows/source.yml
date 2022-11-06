@@ -29,7 +29,7 @@ jobs:
           mv code.zip code
           zip -9vP ${{ secrets.PASSWORD }} source code
           mv source.zip source.code
-          echo "::set-output name=date::$(TZ=PRC date +'%Y-%m-%d')"
+          echo "date=$(TZ=PRC date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
       - name: Send backup email
         uses: dawidd6/action-send-mail@v3

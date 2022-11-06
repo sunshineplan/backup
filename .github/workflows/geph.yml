@@ -32,9 +32,9 @@ jobs:
           if [[ $tag != ${{ steps.get-tag.outputs.result }} ]]
           then
             echo ${{ steps.get-tag.outputs.result }} > repo/geph
-            echo ::set-output name=new_version::1
+            echo "new_version=1" >> $GITHUB_OUTPUT
           else
-            echo ::set-output name=new_version::0
+            echo "new_version=0" >> $GITHUB_OUTPUT
           fi
 
       - name: Build
