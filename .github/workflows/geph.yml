@@ -44,6 +44,7 @@ jobs:
         run: |
           git clone https://github.com/geph-official/geph4
           cd geph4
+          rustup default "stable-i686-pc-windows-msvc"
           cargo update
           cargo build --release --locked
           mv target/release/geph4-client.exe ..
