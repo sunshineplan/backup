@@ -6,7 +6,7 @@ on:
 
 jobs:
   geph:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -26,6 +26,7 @@ jobs:
               return tags.data[0].name
 
       - name: Check new version
+        shell: bash
         id: check-version
         run: |
           tag=$(cat repo/geph)
@@ -38,16 +39,17 @@ jobs:
           fi
 
       - name: Build
+        shell: bash
         if: steps.check-version.outputs.new_version == 1
         run: |
           git clone https://github.com/geph-official/geph4
           cd geph4
           cargo update
           cargo build --release --locked
-          mv target/release/geph4-client ..
+          mv target/release/geph4-client.exe ..
           cargo install cross
-          cross build --release --locked --target x86_64-pc-windows-gnu
-          mv target/x86_64-pc-windows-gnu/release/geph4-client.exe ..
+          cross build --release --locked --target x86_64-unknown-linux-gnu
+          mv target/x86_64-unknown-linux-gnu/release/geph4-client ..
           cd ../repo
           git config user.name github-actions
           git config user.email github-actions@github.com
