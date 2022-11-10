@@ -1,18 +1,26 @@
-name: geph-build
+name: geph build
 
 on:
   release:
     types:
-      - created
+      - published
 
 jobs:
-  geph-build:
+  build:
     if: ${{ github.event.release.tag_name == 'geph' }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ windows-latest, ubuntu-latest ]
+        include:
+          - os: windows-latest
+            target: stable-i686-pc-windows-msvc
     steps:
+      - if: ${{ matrix.target }}
+        run: |
+          rustup default ${{ matrix.target }}
+          rustup update
+
       - name: Build
         shell: bash
         run: |
@@ -21,7 +29,6 @@ jobs:
           cargo update
           cargo build --release --locked
           rm target/release/*.d
-
 
       - name: Upload Release Asset
         uses: shogo82148/actions-upload-release-asset@v1
