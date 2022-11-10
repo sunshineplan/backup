@@ -1,0 +1,30 @@
+name: geph-build
+
+on:
+  release:
+    types:
+      - created
+
+jobs:
+  geph-build:
+    if: ${{ github.event.release.tag_name == 'geph' }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ windows-latest, ubuntu-latest ]
+    steps:
+      - name: Build
+        shell: bash
+        run: |
+          git clone https://github.com/geph-official/geph4
+          cd geph4
+          cargo update
+          cargo build --release --locked
+          rm target/release/*.d
+
+
+      - name: Upload Release Asset
+        uses: shogo82148/actions-upload-release-asset@v1
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: geph4/target/release/geph4-client*

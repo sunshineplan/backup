@@ -6,7 +6,7 @@ on:
 
 jobs:
   geph:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -26,7 +26,6 @@ jobs:
               return tags.data[0].name
 
       - name: Check new version
-        shell: bash
         id: check-version
         run: |
           tag=$(cat repo/geph)
@@ -34,30 +33,15 @@ jobs:
           then
             echo ${{ steps.get-tag.outputs.result }} > repo/geph
             echo "new_version=1" >> $GITHUB_OUTPUT
+            cd repo
+            git config user.name github-actions
+            git config user.email github-actions@github.com
+            git add .
+            git commit -m "${{ steps.get-tag.outputs.result }}"
+            git push
           else
             echo "new_version=0" >> $GITHUB_OUTPUT
           fi
-
-      - name: Build
-        shell: bash
-        if: steps.check-version.outputs.new_version == 1
-        run: |
-          git clone https://github.com/geph-official/geph4
-          cd geph4
-          rustup default stable-i686-pc-windows-msvc
-          rustup target add x86_64-unknown-linux-gnu
-          rustup update
-          cargo update
-          cargo build --release --locked
-          mv target/release/geph4-client.exe ..
-          cargo build --release --locked --target x86_64-unknown-linux-gnu
-          mv target/x86_64-unknown-linux-gnu/release/geph4-client ..
-          cd ../repo
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git add .
-          git commit -m "${{ steps.get-tag.outputs.result }}"
-          git push
 
       - name: Delete Old Release
         if: steps.check-version.outputs.new_version == 1
@@ -94,7 +78,6 @@ jobs:
         with:
           tag_name: geph
           name: geph
-          files: geph4-client*
 
       - name: Send notify
         if: steps.check-version.outputs.new_version == 1
