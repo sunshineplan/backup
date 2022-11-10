@@ -21,7 +21,7 @@ jobs:
           script: |
               const tags = await github.rest.repos.listTags({
                 owner: 'geph-official',
-                repo: 'geph4',
+                repo: 'geph4-client',
               })
               return tags.data[0].name
 

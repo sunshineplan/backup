@@ -14,18 +14,18 @@ jobs:
         os: [ windows-latest, ubuntu-latest ]
         include:
           - os: windows-latest
-            target: stable-i686-pc-windows-msvc
+            windows: stable-i686-pc-windows-msvc
     steps:
-      - if: ${{ matrix.target }}
+      - if: ${{ matrix.windows }}
         run: |
-          rustup default ${{ matrix.target }}
+          rustup default ${{ matrix.windows }}
           rustup update
 
       - name: Build
         shell: bash
         run: |
-          git clone https://github.com/geph-official/geph4
-          cd geph4
+          git clone https://github.com/geph-official/geph4-client
+          cd geph4-client
           cargo update
           cargo build --release --locked
           rm target/release/*.d
@@ -34,4 +34,10 @@ jobs:
         uses: shogo82148/actions-upload-release-asset@v1
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: geph4/target/release/geph4-client*
+          asset_path: geph4-client/target/release/geph4-client*
+
+      - if: ${{ matrix.windows }}
+        uses: shogo82148/actions-upload-release-asset@v1
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: geph4-client/windows-lib/WinDivert.dll
