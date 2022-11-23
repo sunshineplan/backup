@@ -7,6 +7,9 @@ on:
 jobs:
   geph:
     runs-on: ubuntu-latest
+    outputs:
+      new_version: ${{ steps.check-version.outputs.new_version }}
+      upload_url: ${{ steps.release.outputs.upload_url }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -71,6 +74,7 @@ jobs:
             })
 
       - name: Create Release
+        id: release
         if: steps.check-version.outputs.new_version == 1
         uses: softprops/action-gh-release@v1
         env:
@@ -91,3 +95,42 @@ jobs:
           body: geph - ${{ steps.get-tag.outputs.result }}
           from: Github Actions
           to: ${{ secrets.TO }}
+
+  build:
+    needs: geph
+    if: ${{ needs.geph.outputs.new_version == 1 }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ windows-latest, ubuntu-latest ]
+        include:
+          - os: windows-latest
+            windows: stable-i686-pc-windows-msvc
+    steps:
+      - if: ${{ matrix.windows }}
+        name: Setup Rust
+        run: |
+          rustup default ${{ matrix.windows }}
+          rustup update
+
+      - name: Build
+        shell: bash
+        run: |
+          git clone https://github.com/geph-official/geph4-client
+          cd geph4-client
+          cargo update
+          cargo build --release --locked
+          rm target/release/*.d
+
+      - name: Upload Release Asset
+        uses: shogo82148/actions-upload-release-asset@v1
+        with:
+          upload_url: ${{ needs.geph.outputs.upload_url }}
+          asset_path: geph4-client/target/release/geph4-client*
+
+      - if: ${{ matrix.windows }}
+        name: Upload WinDivert.dll
+        uses: shogo82148/actions-upload-release-asset@v1
+        with:
+          upload_url: ${{ needs.geph.outputs.upload_url }}
+          asset_path: geph4-client/windows-lib/WinDivert.dll
