@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  vlmcsd:
+  xxqg:
     runs-on: ubuntu-latest
     steps:
       - name: Setup Go
@@ -39,6 +39,7 @@ jobs:
 
       - name: Build
         run: |
+          git clone -b dev https://github.com/sunshineplan/xxqg
           go build -ldflags "-s -w"
           GOOS=windows go build -ldflags "-s -w"
 
