@@ -82,6 +82,7 @@ jobs:
         with:
           tag_name: geph
           name: geph
+          body: geph - ${{ steps.get-tag.outputs.result }}
 
       - name: Send notify
         if: steps.check-version.outputs.new_version == 1

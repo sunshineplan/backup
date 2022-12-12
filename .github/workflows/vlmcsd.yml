@@ -52,4 +52,5 @@ jobs:
         with:
           tag_name: vlmcsd
           name: vlmcsd
+          body: vlmcsd
           files: output/vlmcs*

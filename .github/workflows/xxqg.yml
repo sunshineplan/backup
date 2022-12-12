@@ -51,4 +51,5 @@ jobs:
         with:
           tag_name: xxqg
           name: xxqg
+          body: xxqg
           files: xxqg/xxqg*
