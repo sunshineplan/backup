@@ -41,7 +41,7 @@ jobs:
         run: |
           git clone -b dev https://github.com/sunshineplan/xxqg
           cd xxqg
-          go build -ldflags "-s -w"
+          GOOS=darwin GOARCH=arm64 go build -ldflags "-s -w"
           GOOS=windows go build -ldflags "-s -w"
 
       - name: Create Release
