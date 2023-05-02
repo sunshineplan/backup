@@ -1,11 +1,11 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"log"
 	"net"
 	"strconv"
-	"strings"
 
 	"github.com/sunshineplan/forwarder"
 	"github.com/sunshineplan/utils/mail"
@@ -32,7 +32,9 @@ func main() {
 	}
 	account.Server = host
 	account.Port, _ = strconv.Atoi(port)
-	account.To = strings.Split(*to, ",")
+	if err := json.Unmarshal([]byte(*to), &account.To); err != nil {
+		log.Fatal(err)
+	}
 
 	if _, err := account.Start(false); err != nil {
 		log.Fatal(err)
