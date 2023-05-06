@@ -16,13 +16,11 @@ imgconv
 install-script
 metadata
 myaccounts
-myanime
 mybookmarks
 myip
 myproxy
 mystocks
 mytasks
-myvideo
 node
 olms
 password
@@ -40,4 +38,3 @@ useragent
 utils
 weather
 web-crawler
-xxqg
