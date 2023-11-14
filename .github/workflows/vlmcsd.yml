@@ -20,7 +20,7 @@ jobs:
           cp bin/* ../output
 
       - name: Delete Old Release
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             let release
