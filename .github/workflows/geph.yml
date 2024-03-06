@@ -73,17 +73,6 @@ jobs:
               ref: 'tags/geph'
             })
 
-      - name: Create Release
-        id: release
-        if: steps.check-version.outputs.new_version == 1
-        uses: softprops/action-gh-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: geph
-          name: geph
-          body: geph - ${{ steps.get-tag.outputs.result }}
-
       - name: Send notify
         if: steps.check-version.outputs.new_version == 1
         uses: dawidd6/action-send-mail@v3
@@ -96,6 +85,17 @@ jobs:
           body: geph - ${{ steps.get-tag.outputs.result }}
           from: Github Actions
           to: ${{ secrets.TO }}
+
+      - name: Create Release
+        id: release
+        if: steps.check-version.outputs.new_version == 1
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: geph
+          name: geph
+          body: geph - ${{ steps.get-tag.outputs.result }}
 
   build:
     needs: geph
