@@ -17,16 +17,11 @@ jobs:
             let resp = await github.request('https://api.vpsserver.com/v1/servers.json')
             const result = []
             for (const server of resp.data.servers) {
-              const resp = await github.request(`https://api.vpsserver.com/v1/servers/${server.id}.json`)
-              const label = resp.data.server.label
-              const bandwidth_used = resp.data.server.bandwidth_used/1024/1024
-              result.push(`${label}: ${bandwidth_used}`)
+              result.push(`${server.label}: ${server.bandwidth_used/1024/1024}`)
             }
-
             resp = await github.request('https://api.vpsserver.com/v1/user.json')
-            const balance = resp.data.user.balance
 
-            return { body: result.join('\n'), balance }
+            return { body: result.join('\n'), balance: resp.data.user.balance }
 
       - name: Date
         id: date
