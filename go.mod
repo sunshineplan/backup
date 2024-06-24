@@ -4,7 +4,7 @@ go 1.22
 
 require (
 	github.com/sunshineplan/forwarder v1.0.4
-	github.com/sunshineplan/utils v0.1.69
+	github.com/sunshineplan/utils v0.1.70
 )
 
 require (
