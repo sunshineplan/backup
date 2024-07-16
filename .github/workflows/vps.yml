@@ -34,30 +34,24 @@ jobs:
 
       - name: Get Usage
         id: usage
-        uses: actions/github-script@v7
         env:
           HTTPS_PROXY: ${{ secrets.HTTPS_PROXY }}
-        with:
-          script: |
-            const resp = await fetch('https://console.vpsserver.com/service/servers', {
-              headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ${{ steps.auth.outputs.result }}' }
-            })
-            const output = []
-            for (const server of await resp.json()) {
-              const resp = await fetch(`https://console.vpsserver.com/service/server/${server.id}`, {
-                headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ${{ steps.auth.outputs.result }}' }
-              })
-              if (resp.ok) {
-                const res = await resp.json()
-                output.push(`${server.name}: ${res.traffic/1024/1024}`)
-              }
-            }
-            return output.join('\n')
-          result-encoding: string
-
-      - name: Date
-        id: date
-        run: echo "date=$(TZ=PRC date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+          Content_Type: "Content-Type: application/json"
+          Authorization: "Authorization: Bearer ${{ steps.auth.outputs.result }}" 
+        run: |
+          SERVERS=$(curl -s -H ${Content_Type} -H ${Authorization} "https://console.vpsserver.com/service/servers")
+          OUTPUT=()
+          for SERVER_INFO in $(echo "$SERVERS" | jq -c '.[]'); do
+            SERVER_ID=$(echo "$SERVER_INFO" | jq -r '.id')
+            SERVER_NAME=$(echo "$SERVER_INFO" | jq -r '.name')
+            TRAFFIC_INFO=$(curl -s -H ${Content_Type} -H ${Authorization} "https://console.vpsserver.com/service/server/${SERVER_ID}")
+            if [[ $(echo "$TRAFFIC_INFO" | jq '.traffic' 2>/dev/null) != "null" ]]; then
+              SERVER_TRAFFIC=$(echo "$TRAFFIC_INFO" | jq '.traffic / 1024 / 1024' | awk '{printf "%.2f", $0}')
+              OUTPUT+=("${SERVER_NAME}: ${SERVER_TRAFFIC}MB")
+            fi
+          done
+          echo result=$(echo "${OUTPUT[@]}" | tr ' ' '\n') >> $GITHUB_OUTPUT
+          echo "date=$(TZ=PRC date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
       - name: Send backup email
         uses: dawidd6/action-send-mail@v3
@@ -66,7 +60,7 @@ jobs:
           server_port: 587
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
-          subject: 'VPS Usage - ${{ steps.date.outputs.date }} - Balance: $${{ steps.balance.outputs.result }}'
+          subject: 'VPS Usage - ${{ steps.usage.outputs.date }} - Balance: $${{ steps.balance.outputs.result }}'
           body: ${{ steps.usage.outputs.result }}
           from: Github Actions
           to: ${{ secrets.TO }}
