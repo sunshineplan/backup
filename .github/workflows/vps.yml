@@ -42,12 +42,12 @@ jobs:
             })
             const output = []
             for (const server of await resp.json()) {
-              const resp = await fetch(https://console.vpsserver.com/service/server/${server.id}, {
+              const resp = await fetch(`https://console.vpsserver.com/service/server/${server.id}`, {
                 headers: { Authorization: 'Bearer ${{ steps.auth.outputs.result }}' }
               })
               if (resp.ok) {
                 const res = await resp.json()
-                output.push(${server.name}: ${res.traffic})
+                output.push(`${server.name}: ${res.traffic}`)
               }
             }
             return output.join('\n')
