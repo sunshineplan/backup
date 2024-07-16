@@ -40,11 +40,11 @@ jobs:
               headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ${{ steps.auth.outputs.result }}' }
             })
             const result = []
-            for (const server of resp.data) {
+            for (const server of resp) {
               const resp = await github.request(`https://console.vpsserver.com/service/server/${server.id}`, {
                 headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ${{ steps.auth.outputs.result }}' }
               })
-              if (resp.ok) result.push(`${server.name}: ${resp.data.traffic/1024/1024}`)
+              if (resp.ok) result.push(`${server.name}: ${resp.traffic/1024/1024}`)
             }
             return result.join('\n')
           result-encoding: string
