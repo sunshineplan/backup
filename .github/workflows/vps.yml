@@ -28,7 +28,8 @@ jobs:
               body: JSON.stringify({ clientid: '${{ secrets.CLIENT_ID }}', secret: '${{ secrets.SECRET }}' }),
               headers: { 'Content-Type': 'application/json' }
             })
-            return resp.authentication
+            const res = await resp.json()
+            return res.authentication
           result-encoding: string
 
       - name: Get Usage
@@ -39,14 +40,17 @@ jobs:
             const resp = await fetch('https://console.vpsserver.com/service/servers', {
               headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ${{ steps.auth.outputs.result }}' }
             })
-            const result = []
-            for (const server of resp) {
+            const output = []
+            for (const server of await resp.json()) {
               const resp = await github.request(`https://console.vpsserver.com/service/server/${server.id}`, {
                 headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ${{ steps.auth.outputs.result }}' }
               })
-              if (resp.ok) result.push(`${server.name}: ${resp.traffic/1024/1024}`)
+              if (resp.ok) {
+                const res = await resp.json()
+                output.push(`${server.name}: ${res.traffic/1024/1024}`)
+              }
             }
-            return result.join('\n')
+            return output.join('\n')
           result-encoding: string
 
       - name: Date
