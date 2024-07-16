@@ -41,6 +41,7 @@ jobs:
               headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ${{ steps.auth.outputs.result }}' }
             })
             const servers = await resp.json()
+            console.log(servers)
             const output = []
             for (const server of servers) {
               const resp = await github.request(`https://console.vpsserver.com/service/server/${server.id}`, {
