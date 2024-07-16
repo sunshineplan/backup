@@ -28,7 +28,7 @@ jobs:
               body: JSON.stringify({ clientid: '${{ secrets.CLIENT_ID }}', secret: '${{ secrets.SECRET }}' }),
               headers: { 'Content-Type': 'application/json' }
             })
-            return resp.data.authentication
+            return resp.authentication
           result-encoding: string
 
       - name: Get Usage
