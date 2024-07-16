@@ -29,6 +29,7 @@ jobs:
               headers: { 'Content-Type': 'application/json' }
             })
             const res = await resp.json()
+            console.log(res)
             return res.authentication
           result-encoding: string
 
