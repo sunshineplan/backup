@@ -40,8 +40,9 @@ jobs:
             const resp = await fetch('https://console.vpsserver.com/service/servers', {
               headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ${{ steps.auth.outputs.result }}' }
             })
+            const servers = await resp.json()
             const output = []
-            for (const server of await resp.json()) {
+            for (const server of servers) {
               const resp = await github.request(`https://console.vpsserver.com/service/server/${server.id}`, {
                 headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ${{ steps.auth.outputs.result }}' }
               })
