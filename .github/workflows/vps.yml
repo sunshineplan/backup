@@ -8,20 +8,41 @@ jobs:
   vps:
     runs-on: ubuntu-latest
     steps:
-      - name: Get Usage
-        id: usage
+      - name: Get Balance
+        id: balance
         uses: actions/github-script@v7
         with:
           github-token: Bearer ${{ secrets.VPS_TOKEN }}
           script: |
-            let resp = await github.request('https://api.vpsserver.com/v1/servers.json')
-            const result = []
-            for (const server of resp.data.servers) {
-              result.push(`${server.label}: ${server.bandwidth_used/1024/1024}`)
-            }
             resp = await github.request('https://api.vpsserver.com/v1/user.json')
+            return resp.data.user.balance
+          result-encoding: string
 
-            return { body: result.join('\n'), balance: resp.data.user.balance }
+      - name: Authentication
+        id: auth
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const resp = await github.request('POST https://console.vpsserver.com/service/authenticate', {
+              data: { clientid: "${{ secrets.CLIENT_ID }}", secret: "${{ secrets.SECRET }}" }
+            })
+            return resp.data.authentication
+          result-encoding: string
+
+      - name: Get Usage
+        id: usage
+        uses: actions/github-script@v7
+        with:
+          github-token: Bearer ${{ steps.auth.outputs.result }}
+          script: |
+            const resp = await github.request('https://console.vpsserver.com/service/servers')
+            const result = []
+            for (const server of resp.data) {
+              const resp = await github.request(`https://console.vpsserver.com/service/server/${server.id}`)
+              if (resp.ok) result.push(`${server.name}: ${resp.data.traffic/1024/1024}`)
+            }
+            return result.join('\n')
+          result-encoding: string
 
       - name: Date
         id: date
@@ -34,7 +55,7 @@ jobs:
           server_port: 587
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
-          subject: 'VPS Usage - ${{ steps.date.outputs.date }} - Balance: $${{ fromJSON(steps.usage.outputs.result).balance }}'
-          body: ${{ fromJSON(steps.usage.outputs.result).body }}
+          subject: 'VPS Usage - ${{ steps.date.outputs.date }} - Balance: $${{ steps.balance.outputs.result }}'
+          body: ${{ steps.usage.outputs.result }}
           from: Github Actions
           to: ${{ secrets.TO }}
