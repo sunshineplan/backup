@@ -35,12 +35,15 @@ jobs:
         id: usage
         uses: actions/github-script@v7
         with:
-          github-token: Bearer ${{ steps.auth.outputs.result }}
           script: |
-            const resp = await github.request('https://console.vpsserver.com/service/servers')
+            const resp = await fetch('https://console.vpsserver.com/service/servers', {
+              headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ${{ steps.auth.outputs.result }}' }
+            })
             const result = []
             for (const server of resp.data) {
-              const resp = await github.request(`https://console.vpsserver.com/service/server/${server.id}`)
+              const resp = await github.request(`https://console.vpsserver.com/service/server/${server.id}`, {
+                headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ${{ steps.auth.outputs.result }}' }
+              })
               if (resp.ok) result.push(`${server.name}: ${resp.data.traffic/1024/1024}`)
             }
             return result.join('\n')
