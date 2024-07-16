@@ -40,11 +40,13 @@ jobs:
           Authorization: "Authorization: Bearer ${{ steps.auth.outputs.result }}" 
         run: |
           SERVERS=$(curl -s -H "${Content_Type}" "-H ${Authorization}" "https://console.vpsserver.com/service/servers")
+          echo $SERVERS
           OUTPUT=()
           for SERVER_INFO in $(echo "$SERVERS" | jq -c '.[]'); do
             SERVER_ID=$(echo "$SERVER_INFO" | jq -r '.id')
             SERVER_NAME=$(echo "$SERVER_INFO" | jq -r '.name')
             TRAFFIC_INFO=$(curl -s -H "${Content_Type}" "-H ${Authorization}" "https://console.vpsserver.com/service/server/${SERVER_ID}")
+            echo $TRAFFIC_INFO
             if [[ $(echo "$TRAFFIC_INFO" | jq '.traffic' 2>/dev/null) != "null" ]]; then
               SERVER_TRAFFIC=$(echo "$TRAFFIC_INFO" | jq '.traffic / 1024 / 1024' | awk '{printf "%.2f", $0}')
               OUTPUT+=("${SERVER_NAME}: ${SERVER_TRAFFIC}MB")
