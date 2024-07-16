@@ -25,7 +25,7 @@ jobs:
           script: |
             const resp = await fetch('https://console.vpsserver.com/service/authenticate', {
               method: 'POST',
-              body: JSON.stringify({ clientid: '${{ secrets.CLIENT_ID }}', secret: '${{ secrets.SECRET }}' }),
+              body: JSON.stringify({ clientId: '${{ secrets.CLIENT_ID }}', secret: '${{ secrets.SECRET }}' }),
               headers: { 'Content-Type': 'application/json' }
             })
             const res = await resp.json()
