@@ -39,13 +39,10 @@ jobs:
               headers: { Authorization: `Bearer ${res.authentication}` }
             })
             res = await resp.text()
-            const re = /NetNetwork,.+,\d+\.\d+GB,/g
+            const re = /Network,([^,]+),.+?,(\d+\.\d+GB),/g
+            let found
             const output = []
-            while ((array1 = re.exec(res)) !== null) {
-              console.log(`Found ${array1[0]}. Next starts at ${regex1.lastIndex}.`);
-              // Expected output: "Found foo. Next starts at 9."
-              // Expected output: "Found foo. Next starts at 19."
-            }
+            while ((found = re.exec(res)) !== null) output.push(`${found[1]}: ${found[2]}`)
             return output.join('\n')
           result-encoding: string
 
