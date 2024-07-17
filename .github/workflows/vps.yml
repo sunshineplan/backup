@@ -34,11 +34,14 @@ jobs:
               body: JSON.stringify({ clientId: '${{ secrets.CLIENT_ID }}', secret: '${{ secrets.SECRET }}' }),
               headers: { 'Content-Type': 'application/json' }
             })
-            const res = await resp.json()
+            let res = await resp.json()
             resp = await fetch('https://console.vpsserver.com/service/billing/${{ steps.date.outputs.ym }}/self', {
               headers: { Authorization: `Bearer ${res.authentication}` }
             })
-            return await resp.text()
+            res = await resp.text()
+            const usage = res.match(/,\d+\.\d+GB,/g)
+            if (usage) return usage[0]
+            else return ''
           result-encoding: string
 
       - name: Create MD
