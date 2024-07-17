@@ -8,6 +8,12 @@ jobs:
   vps:
     runs-on: ubuntu-latest
     steps:
+      - name: Date
+        id: date
+        run: |
+          echo ym=$(TZ=PRC date +'%Y/%-m') >> $GITHUB_OUTPUT
+          echo date=$(TZ=PRC date +'%Y-%m-%d') >> $GITHUB_OUTPUT
+
       - name: Get Balance
         id: balance
         uses: actions/github-script@v7
@@ -18,44 +24,28 @@ jobs:
             return resp.data.user.balance
           result-encoding: string
 
-      - name: Authentication
-        id: auth
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const resp = await fetch('https://console.vpsserver.com/service/authenticate', {
-              method: 'POST',
-              body: JSON.stringify({ clientId: '${{ secrets.CLIENT_ID }}', secret: '${{ secrets.SECRET }}' }),
-              headers: { 'Content-Type': 'application/json' }
-            })
-            const res = await resp.json()
-            return res.authentication
-          result-encoding: string
-
       - name: Get Usage
         id: usage
         uses: actions/github-script@v7
         with:
           script: |
-            const resp = await fetch('https://console.vpsserver.com/service/servers', {
-              headers: { Authorization: 'Bearer ${{ steps.auth.outputs.result }}' }
+            let resp = await fetch('https://console.vpsserver.com/service/authenticate', {
+              method: 'POST',
+              body: JSON.stringify({ clientId: '${{ secrets.CLIENT_ID }}', secret: '${{ secrets.SECRET }}' }),
+              headers: { 'Content-Type': 'application/json' }
             })
-            const output = []
-            for (const server of await resp.json()) {
-              const resp = await fetch(`https://console.vpsserver.com/service/server/${server.id}`, {
-                headers: { Authorization: 'Bearer ${{ steps.auth.outputs.result }}' }
-              })
-              if (resp.ok) {
-                const res = await resp.json()
-                output.push(`${server.name}: ${res.traffic}`)
-              }
-            }
-            return output.join('\n')
+            const res = await resp.json()
+            resp = await fetch('https://console.vpsserver.com/service/billing/${{ steps.date.outputs.ym }}/self', {
+              headers: { Authorization: `Bearer ${res.authentication}` }
+            })
+            return await resp.text()
           result-encoding: string
 
-      - name: Date
-        id: date
-        run: echo "date=$(TZ=PRC date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+      - name: Create MD
+        uses: petems/csv-to-md-table-action@master
+        id: md
+        with:
+          csvinput: ${{ steps.usage.outputs.result }}
 
       - name: Send backup email
         uses: dawidd6/action-send-mail@v3
@@ -65,6 +55,7 @@ jobs:
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
           subject: 'VPS Usage - ${{ steps.date.outputs.date }} - Balance: $${{ steps.balance.outputs.result }}'
-          body: ${{ steps.usage.outputs.result }}
+          html_body: ${{ steps.md.outputs.markdown-table }}
+          convert_markdown: true
           from: Github Actions
           to: ${{ secrets.TO }}
