@@ -39,16 +39,15 @@ jobs:
               headers: { Authorization: `Bearer ${res.authentication}` }
             })
             res = await resp.text()
-            const usage = res.match(/,\d+\.\d+GB,/g)
-            if (usage) return usage[0]
-            else return ''
+            const re = /NetNetwork,.+,\d+\.\d+GB,/g
+            const output = []
+            while ((array1 = re.exec(res)) !== null) {
+              console.log(`Found ${array1[0]}. Next starts at ${regex1.lastIndex}.`);
+              // Expected output: "Found foo. Next starts at 9."
+              // Expected output: "Found foo. Next starts at 19."
+            }
+            return output.join('\n')
           result-encoding: string
-
-      - name: Create MD
-        uses: petems/csv-to-md-table-action@master
-        id: md
-        with:
-          csvinput: ${{ steps.usage.outputs.result }}
 
       - name: Send backup email
         uses: dawidd6/action-send-mail@v3
@@ -58,7 +57,6 @@ jobs:
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
           subject: 'VPS Usage - ${{ steps.date.outputs.date }} - Balance: $${{ steps.balance.outputs.result }}'
-          html_body: ${{ steps.md.outputs.markdown-table }}
-          convert_markdown: true
+          body: ${{ steps.usage.outputs.result }}
           from: Github Actions
           to: ${{ secrets.TO }}
