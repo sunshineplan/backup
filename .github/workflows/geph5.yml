@@ -64,18 +64,19 @@ jobs:
       - name: Build
         shell: bash
         run: |
+          mkdir -p release
           git clone https://github.com/geph-official/geph5
           cargo update
-          cargo build --release --locked --manifest-path geph5/binaries/geph5-client/Cargo.toml
-          mkdir -p release
+          cd geph5
+          cargo build --release --locked --manifest-path binaries/geph5-client/Cargo.toml
 
       - name: Move client binary (non-Windows)
         if: matrix.os != 'windows-latest'
-        run: mv target/release/geph5-client release/geph5-client-${{ matrix.name }}
+        run: mv target/release/geph5-client ../release/geph5-client-${{ matrix.name }}
 
       - name: Move client binary (Windows)
         if: matrix.os == 'windows-latest'
-        run: mv target/release/geph5-client.exe release/geph5-client-${{ matrix.name }}.exe
+        run: mv target/release/geph5-client.exe ../release/geph5-client-${{ matrix.name }}.exe
 
       - name: Upload Release Asset
         uses: shogo82148/actions-upload-release-asset@v1
