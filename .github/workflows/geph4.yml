@@ -114,11 +114,11 @@ jobs:
       - name: Build
         shell: bash
         run: |
+          mkdir -p release
           git clone https://github.com/geph-official/geph4-client
           cd geph4-client
           cargo update
           cargo build --release --locked
-          mkdir -p release
 
       - name: Move client binary (non-Windows)
         if: matrix.os != 'windows-latest'
