@@ -8,11 +8,6 @@ jobs:
     outputs:
       upload_url: ${{ steps.release.outputs.upload_url }}
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-        with:
-          path: repo
-
       - name: Delete Old Release
         uses: actions/github-script@v7
         with:
@@ -66,8 +61,8 @@ jobs:
         run: |
           mkdir -p release
           git clone https://github.com/geph-official/geph5
-          cargo update
           cd geph5/binaries/geph5-client
+          cargo update
           cargo build --release --locked
 
       - name: Move client binary (non-Windows)
