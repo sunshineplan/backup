@@ -115,17 +115,19 @@ jobs:
         shell: bash
         run: |
           git clone https://github.com/geph-official/geph4-client
+          cd geph4-client
           cargo update
-          cargo build --release --locked --manifest-path geph4-client/Cargo.toml
+          cargo build --release --locked
           mkdir -p release
 
       - name: Move client binary (non-Windows)
         if: matrix.os != 'windows-latest'
-        run: mv target/release/geph4-client release/geph4-client-${{ matrix.name }}
+        run: mv geph4-client/target/release/geph4-client release/geph4-client-${{ matrix.name }}
 
       - name: Move client binary (Windows)
         if: matrix.os == 'windows-latest'
-        run: mv target/release/geph4-client.exe release/geph4-client-${{ matrix.name }}.exe
+        shell: bash
+        run: mv geph4-client/target/release/geph4-client.exe release/geph4-client-${{ matrix.name }}.exe
 
       - name: Upload Release Asset
         uses: shogo82148/actions-upload-release-asset@v1
