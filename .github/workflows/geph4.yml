@@ -111,6 +111,12 @@ jobs:
           - os: macos-latest
             name: macos-arm64
     steps:
+      - if: matrix.os == 'windows-latest'
+        name: Setup Rust
+        run: |
+          rustup default stable-i686-pc-windows-msvc
+          rustup update
+
       - name: Build
         shell: bash
         run: |
