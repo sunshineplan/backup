@@ -6,19 +6,6 @@ jobs:
   vlmcsd:
     runs-on: ubuntu-latest
     steps:
-      - name: Build
-        run: |
-          mkdir output
-          sudo apt install mingw-w64
-          git clone https://github.com/Wind4/vlmcsd
-          cd vlmcsd
-          tar cvzf ../output/vlmcsd.tar.gz *
-          make
-          cp bin/* ../output
-          make clean
-          PROGRAM_NAME=bin/vlmcsd-windows CLIENT_NAME=bin/vlmcs-windows CC=x86_64-w64-mingw32-gcc make
-          cp bin/* ../output
-
       - name: Delete Old Release
         uses: actions/github-script@v7
         with:
@@ -44,6 +31,19 @@ jobs:
               repo: context.repo.repo,
               ref: 'tags/vlmcsd'
             })
+
+      - name: Build
+        run: |
+          mkdir output
+          sudo apt install mingw-w64
+          git clone https://github.com/Wind4/vlmcsd
+          cd vlmcsd
+          tar cvzf ../output/vlmcsd.tar.gz *
+          make
+          cp bin/* ../output
+          make clean
+          PROGRAM_NAME=bin/vlmcsd-windows CLIENT_NAME=bin/vlmcs-windows CC=x86_64-w64-mingw32-gcc make
+          cp bin/* ../output
 
       - name: Create Release
         uses: softprops/action-gh-release@v2

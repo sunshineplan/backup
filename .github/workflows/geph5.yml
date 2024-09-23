@@ -79,9 +79,6 @@ jobs:
           path: artifacts
           merge-multiple: true
 
-      - name: Display structure of downloaded files
-        run: ls -R
-
       - name: Create Release
         id: release
         uses: softprops/action-gh-release@v2

@@ -5,11 +5,10 @@ on:
     - cron: '0 16 * * *'
 
 jobs:
-  geph4:
+  check:
     runs-on: ubuntu-latest
     outputs:
       new_version: ${{ steps.check-version.outputs.new_version }}
-      upload_url: ${{ steps.release.outputs.upload_url }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -32,22 +31,21 @@ jobs:
         id: check-version
         run: |
           tag=$(cat repo/geph)
-          if [[ $tag != ${{ steps.get-tag.outputs.result }} ]]
+          new=${{ steps.get-tag.outputs.result }}
+          if [[ $tag != $new ]]
           then
-            echo ${{ steps.get-tag.outputs.result }} > repo/geph
-            echo "new_version=1" >> $GITHUB_OUTPUT
+            echo $new > repo/geph
+            echo "new_version=$new" >> $GITHUB_OUTPUT
             cd repo
             git config user.name github-actions
             git config user.email github-actions@github.com
             git add .
-            git commit -m "${{ steps.get-tag.outputs.result }}"
+            git commit -m $new
             git push
-          else
-            echo "new_version=0" >> $GITHUB_OUTPUT
           fi
 
       - name: Delete Old Release
-        if: steps.check-version.outputs.new_version == 1
+        if: steps.check-version.outputs.new_version
         uses: actions/github-script@v7
         with:
           script: |
@@ -73,33 +71,9 @@ jobs:
               ref: 'tags/'+release.data.tag_name
             })
 
-      - name: Send notify
-        if: steps.check-version.outputs.new_version == 1
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: ${{ secrets.SERVER }}
-          server_port: 587
-          username: ${{ secrets.USERNAME }}
-          password: ${{ secrets.PASSWORD }}
-          subject: geph4 - ${{ steps.get-tag.outputs.result }}
-          body: geph4 - ${{ steps.get-tag.outputs.result }}
-          from: Github Actions
-          to: ${{ secrets.TO }}
-
-      - name: Create Release
-        id: release
-        if: steps.check-version.outputs.new_version == 1
-        uses: softprops/action-gh-release@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: geph4
-          name: geph4
-          body: geph4 - ${{ steps.get-tag.outputs.result }}
-
   build:
-    needs: geph4
-    if: ${{ needs.geph4.outputs.new_version == 1 }}
+    needs: check
+    if: needs.check.outputs.new_version
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -135,8 +109,42 @@ jobs:
         shell: bash
         run: mv geph4-client/target/release/geph4-client.exe release/geph4-client-${{ matrix.name }}.exe
 
-      - name: Upload Release Asset
-        uses: shogo82148/actions-upload-release-asset@v1
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
         with:
-          upload_url: ${{ needs.geph4.outputs.upload_url }}
-          asset_path: release/geph4-client*
+          name: ${{ matrix.name }}-latest
+          path: release/geph4-client*
+
+  release:
+    runs-on: ubuntu-latest
+    needs: [ check, build ]
+    if: needs.check.outputs.new_version
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Create Release
+        id: release
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: geph4
+          name: geph4 - ${{ needs.check.outputs.new_version }}
+          body: geph4 - ${{ needs.check.outputs.new_version }}
+          files: artifacts/*
+
+      - name: Send notify
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.SERVER }}
+          server_port: 587
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          subject: geph4 - ${{ needs.check.outputs.new_version }}
+          body: geph4 - ${{ needs.check.outputs.new_version }}
+          from: Github Actions
+          to: ${{ secrets.TO }}
