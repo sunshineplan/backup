@@ -5,8 +5,6 @@ on:
 jobs:
   geph5:
     runs-on: ubuntu-latest
-    outputs:
-      upload_url: ${{ steps.release.outputs.upload_url }}
     steps:
       - name: Delete Old Release
         uses: actions/github-script@v7
@@ -34,18 +32,7 @@ jobs:
               ref: 'tags/'+release.data.tag_name
             })
 
-      - name: Create Release
-        id: release
-        uses: softprops/action-gh-release@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: geph5
-          name: geph5
-          body: geph5
-
   build:
-    needs: geph5
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -75,8 +62,30 @@ jobs:
         shell: bash
         run: mv geph5/target/release/geph5-client.exe release/geph5-client-${{ matrix.name }}.exe
 
-      - name: Upload Release Asset
-        uses: shogo82148/actions-upload-release-asset@v1
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
         with:
-          upload_url: ${{ needs.geph5.outputs.upload_url }}
-          asset_path: release/geph5-client*
+          name: ${{ matrix.name }}-latest
+          path: release/geph5-client*
+
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Display structure of downloaded files
+        run: ls -R
+
+      - name: Create Release
+        id: release
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: geph5
+          name: geph5
+          body: geph5
+          files: artifacts/*
