@@ -66,7 +66,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: release
+          name: ${{ matrix.name }}-latest
           path: release/geph5-client*
 
   release:
@@ -77,6 +77,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: artifacts
+          merge-multiple: true
 
       - name: Display structure of downloaded files
         run: ls -R
@@ -90,4 +91,4 @@ jobs:
           tag_name: geph5
           name: geph5
           body: geph5
-          files: artifacts/release/*
+          files: artifacts/*
