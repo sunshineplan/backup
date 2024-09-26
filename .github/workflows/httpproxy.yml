@@ -45,6 +45,11 @@ jobs:
           - os: macos-latest
             name: macos-arm64
     steps:
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: stable
+
       - name: Build
         shell: bash
         run: |
