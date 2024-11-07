@@ -14,16 +14,6 @@ jobs:
           echo ym=$(TZ=PRC date +'%Y/%-m') >> $GITHUB_OUTPUT
           echo date=$(TZ=PRC date +'%Y-%m-%d') >> $GITHUB_OUTPUT
 
-      - name: Get Balance
-        id: balance
-        uses: actions/github-script@v7
-        with:
-          github-token: Bearer ${{ secrets.VPS_TOKEN }}
-          script: |
-            resp = await github.request('https://api.vpsserver.com/v1/user.json')
-            return resp.data.user.balance
-          result-encoding: string
-
       - name: Get Usage
         id: usage
         uses: actions/github-script@v7
@@ -53,7 +43,7 @@ jobs:
           server_port: 587
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
-          subject: 'VPS Usage - ${{ steps.date.outputs.date }} - Balance: $${{ steps.balance.outputs.result }}'
+          subject: 'VPS Usage - ${{ steps.date.outputs.date }}'
           body: ${{ steps.usage.outputs.result }}
           from: Github Actions
           to: ${{ secrets.TO }}
