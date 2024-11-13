@@ -128,8 +128,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: geph5
-          name: geph4 - ${{ needs.check.outputs.new_version }}
-          body: geph4 - ${{ needs.check.outputs.new_version }}
+          name: geph5 - ${{ needs.check.outputs.new_version }}
+          body: geph5 - ${{ needs.check.outputs.new_version }}
           files: artifacts/*
 
       - name: Send notify
