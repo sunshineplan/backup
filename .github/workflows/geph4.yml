@@ -30,11 +30,11 @@ jobs:
       - name: Check new version
         id: check-version
         run: |
-          tag=$(cat repo/geph)
+          tag=$(cat repo/geph4)
           new=${{ steps.get-tag.outputs.result }}
           if [[ $tag != $new ]]
           then
-            echo $new > repo/geph
+            echo $new > repo/geph4
             echo "new_version=$new" >> $GITHUB_OUTPUT
             cd repo
             git config user.name github-actions

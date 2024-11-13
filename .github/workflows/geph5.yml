@@ -1,11 +1,51 @@
 name: geph5
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '0 16 * * *'
 
 jobs:
-  prepare:
+  check:
     runs-on: ubuntu-latest
+    outputs:
+      new_version: ${{ steps.check-version.outputs.new_version }}
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          path: repo
+
+      - name: Get latest tag
+        uses: actions/github-script@v7
+        id: get-tag
+        with:
+          result-encoding: string
+          script: |
+              const { data: latestRelease } = await github.rest.repos.getLatestRelease({
+                owner: 'geph-official',
+                repo: 'geph5',
+              })
+              if (latestRelease.tag_name.startsWith('geph5-client-'))
+                return latestRelease.tag_name.slice(13)
+              return latestRelease.tag_name
+
+      - name: Check new version
+        id: check-version
+        run: |
+          tag=$(cat repo/geph5)
+          new=${{ steps.get-tag.outputs.result }}
+          if [[ $tag != $new ]]
+          then
+            echo $new > repo/geph5
+            echo "new_version=$new" >> $GITHUB_OUTPUT
+            cd repo
+            git config user.name github-actions
+            git config user.email github-actions@github.com
+            git add .
+            git commit -m $new
+            git push
+          fi
+
       - name: Delete Old Release
         uses: actions/github-script@v7
         with:
@@ -34,7 +74,8 @@ jobs:
 
   build:
     runs-on: ${{ matrix.os }}
-    needs: prepare
+    needs: check
+    if: needs.check.outputs.new_version
     strategy:
       matrix:
         include:
@@ -71,7 +112,8 @@ jobs:
 
   release:
     runs-on: ubuntu-latest
-    needs: build
+    needs: [ check, build ]
+    if: needs.check.outputs.new_version
     steps:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
@@ -86,6 +128,18 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: geph5
-          name: geph5
-          body: geph5
+          name: geph4 - ${{ needs.check.outputs.new_version }}
+          body: geph4 - ${{ needs.check.outputs.new_version }}
           files: artifacts/*
+
+      - name: Send notify
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.SERVER }}
+          server_port: 587
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          subject: geph5 - ${{ needs.check.outputs.new_version }}
+          body: geph5 - ${{ needs.check.outputs.new_version }}
+          from: Github Actions
+          to: ${{ secrets.TO }}
