@@ -15,26 +15,12 @@ jobs:
         with:
           path: repo
 
-      - name: Get latest tag
-        uses: actions/github-script@v7
-        id: get-tag
-        with:
-          result-encoding: string
-          script: |
-              const { data: latestRelease } = await github.rest.repos.getLatestRelease({
-                owner: 'geph-official',
-                repo: 'geph5',
-              })
-              if (latestRelease.tag_name.startsWith('geph5-client-'))
-                return latestRelease.tag_name.slice(13)
-              return latestRelease.tag_name
-
       - name: Check new version
         id: check-version
         run: |
-          tag=$(cat repo/geph5)
-          new=${{ steps.get-tag.outputs.result }}
-          if [[ $tag != $new ]]
+          url=https://raw.githubusercontent.com/geph-official/geph5/refs/heads/master/Cargo.toml
+          new=$(curl -s $url | grep -oP '(?<=version = ")\d+\.\d+\.\d+(?=")')
+          if [[ $(cat repo/geph5) != $new ]]
           then
             echo $new > repo/geph5
             echo "new_version=$new" >> $GITHUB_OUTPUT
@@ -47,6 +33,7 @@ jobs:
           fi
 
       - name: Delete Old Release
+        if: steps.check-version.outputs.new_version
         uses: actions/github-script@v7
         with:
           script: |
