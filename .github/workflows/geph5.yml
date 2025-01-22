@@ -18,7 +18,7 @@ jobs:
       - name: Check new version
         id: check-version
         run: |
-          url=https://raw.githubusercontent.com/geph-official/geph5/refs/heads/master/Cargo.toml
+          url=https://raw.githubusercontent.com/geph-official/geph5/refs/heads/master/binaries/geph5-client/Cargo.toml
           new=v$(curl -s $url | grep -oP '(?<=version = ")\d+\.\d+\.\d+(?=")')
           if [[ $(cat repo/geph5) != $new ]]
           then
