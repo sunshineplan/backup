@@ -13,7 +13,7 @@ jobs:
 
       - name: Install mongodb-org-tools
         run: |
-          echo "deb [signed-by=/usr/share/keyrings/mongodb-8.0.gpg] http://repo.mongodb.org/apt/debian $(lsb_release -sc)/mongodb-org/8.0 main" | \
+          echo "deb [signed-by=/usr/share/keyrings/mongodb-8.0.gpg] http://repo.mongodb.org/apt/ubuntu $(lsb_release -sc)/mongodb-org/8.0 main" | \
             sudo tee /etc/apt/sources.list.d/mongodb-org-8.0.list > /dev/null
           curl -fsSL https://pgp.mongodb.com/server-8.0.asc | \
             sudo gpg --dearmor -o /usr/share/keyrings/mongodb-8.0.gpg
