@@ -13,10 +13,12 @@ jobs:
 
       - name: Install mongodb-org-tools
         run: |
-          sudo echo "deb http://repo.mongodb.org/apt/debian $(lsb_release -sc)/mongodb-org/8.0 main" >>/etc/apt/sources.list.d/software.list
-          curl https://pgp.mongodb.com/server-8.0.asc | sudo gpg -o /etc/apt/trusted.gpg.d/mongodb-8.0.gpg --dearmor
-          sudo apt -qq update
-          sudo apt install mongodb-org-tools
+          echo "deb [signed-by=/usr/share/keyrings/mongodb-8.0.gpg] http://repo.mongodb.org/apt/debian $(lsb_release -sc)/mongodb-org/8.0 main" | \
+            sudo tee /etc/apt/sources.list.d/mongodb-org-8.0.list > /dev/null
+          curl -fsSL https://pgp.mongodb.com/server-8.0.asc | \
+            sudo gpg --dearmor -o /usr/share/keyrings/mongodb-8.0.gpg
+          sudo apt-get update -qq
+          sudo apt-get install -y mongodb-org-tools
 
       - name: Backup and Zip
         id : backup
