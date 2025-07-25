@@ -2,8 +2,8 @@ github.com/Azure/go-ntlmssp v0.0.0-20221128193559-754e69321358 h1:mFRzDkZVAjdal+
 github.com/Azure/go-ntlmssp v0.0.0-20221128193559-754e69321358/go.mod h1:chxPXzSsl7ZWRAuOIE23GDNzjWuZquvFlgA8xmpunjU=
 github.com/sunshineplan/forwarder v1.0.4 h1:bBgw9p8fEiU5QULQqm2z5XnpEJd/cimAMyopWN9+zGE=
 github.com/sunshineplan/forwarder v1.0.4/go.mod h1:XzcKWclaxNFqHLCoShDtg+b3zlktw+MRIabWxY2m2nM=
-github.com/sunshineplan/utils v0.1.78 h1:4aBDOTqWUozGBKe3wI1jjxz03yjUdn2GvPMs7oKILuw=
-github.com/sunshineplan/utils v0.1.78/go.mod h1:R7MInPRKnExzzNGJ9qY1W0+11P/3jc6IO5ICuGDPA1w=
+github.com/sunshineplan/utils v0.1.79 h1:daE1TeBTvwHYDa4lSPDQ6jP2o5r3GHlhmAGWPwrgrOY=
+github.com/sunshineplan/utils v0.1.79/go.mod h1:R7MInPRKnExzzNGJ9qY1W0+11P/3jc6IO5ICuGDPA1w=
 golang.org/x/crypto v0.36.0 h1:AnAEvhDddvBdpY+uR+MyHmuZzzNqXSe/GvuDeob5L34=
 golang.org/x/crypto v0.36.0/go.mod h1:Y4J0ReaxCR1IMaabaSMugxJES1EpwhBHhv2bDHklZvc=
 golang.org/x/net v0.38.0 h1:vRMAPTMaeGqVhG5QyLJHqNDwecKTomGeqbnfZyKlBI8=
