@@ -80,7 +80,7 @@ jobs:
           git clone https://github.com/geph-official/geph5
           cd geph5/binaries/geph5-client
           cargo update
-          cargo build --release --locked
+          cargo build --release --locked --features aws_lambda
 
       - name: Move client binary (non-Windows)
         if: matrix.os != 'windows-latest'
