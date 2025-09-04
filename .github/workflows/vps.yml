@@ -16,7 +16,7 @@ jobs:
 
       - name: Get Usage
         id: usage
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             let resp = await fetch('https://console.vpsserver.com/service/authenticate', {
