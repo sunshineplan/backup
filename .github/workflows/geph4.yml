@@ -16,7 +16,7 @@ jobs:
           path: repo
 
       - name: Get latest tag
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         id: get-tag
         with:
           result-encoding: string
@@ -46,7 +46,7 @@ jobs:
 
       - name: Delete Old Release
         if: steps.check-version.outputs.new_version
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             let release
