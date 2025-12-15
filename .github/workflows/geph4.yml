@@ -110,7 +110,7 @@ jobs:
         run: mv geph4-client/target/release/geph4-client.exe release/geph4-client-${{ matrix.name }}.exe
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ matrix.name }}-latest
           path: release/geph4-client*
