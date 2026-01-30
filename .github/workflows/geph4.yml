@@ -138,7 +138,7 @@ jobs:
           files: artifacts/*
 
       - name: Send notify
-        uses: dawidd6/action-send-mail@v7
+        uses: dawidd6/action-send-mail@v8
         with:
           server_address: ${{ secrets.SERVER }}
           server_port: 587

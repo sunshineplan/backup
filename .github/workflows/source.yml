@@ -32,7 +32,7 @@ jobs:
           echo "date=$(TZ=PRC date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
       - name: Send backup email
-        uses: dawidd6/action-send-mail@v7
+        uses: dawidd6/action-send-mail@v8
         with:
           server_address: ${{ secrets.SERVER }}
           server_port: 587
