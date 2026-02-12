@@ -1,10 +1,10 @@
 module backup
 
-go 1.25
+go 1.26
 
 require (
 	github.com/sunshineplan/forwarder v1.0.4
-	github.com/sunshineplan/utils v0.1.83
+	github.com/sunshineplan/utils v0.1.84
 )
 
 require (
