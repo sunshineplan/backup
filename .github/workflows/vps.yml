@@ -45,5 +45,5 @@ jobs:
           password: ${{ secrets.PASSWORD }}
           subject: 'VPS Usage - ${{ steps.date.outputs.date }}'
           body: ${{ steps.usage.outputs.result }}
-          from: Github Actions
+          from: ${{ secrets.USERNAME }}
           to: ${{ secrets.TO }}
