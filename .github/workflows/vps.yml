@@ -37,7 +37,7 @@ jobs:
           result-encoding: string
 
       - name: Send backup email
-        uses: dawidd6/action-send-mail@v13
+        uses: dawidd6/action-send-mail@v14
         with:
           server_address: ${{ secrets.SERVER }}
           server_port: 587
