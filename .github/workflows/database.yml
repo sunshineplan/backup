@@ -36,6 +36,6 @@ jobs:
           password: ${{ secrets.PASSWORD }}
           subject: Database Backup - ${{ steps.backup.outputs.date }}
           body: Database Backup
-          from: Github Actions
+          from: ${{ secrets.USERNAME }}
           to: ${{ secrets.TO }}
           attachments: database.zip
