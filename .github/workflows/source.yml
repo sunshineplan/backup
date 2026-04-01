@@ -40,6 +40,6 @@ jobs:
           password: ${{ secrets.PASSWORD }}
           subject: Source Code Backup - ${{ steps.backup.outputs.date }}
           body: file://backup
-          from: Github Actions
+          from: ${{ secrets.USERNAME }}
           to: ${{ secrets.TO }}
           attachments: source.code
