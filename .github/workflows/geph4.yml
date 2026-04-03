@@ -146,5 +146,5 @@ jobs:
           password: ${{ secrets.PASSWORD }}
           subject: geph4 - ${{ needs.check.outputs.new_version }}
           body: geph4 - ${{ needs.check.outputs.new_version }}
-          from: Github Actions
+          from: ${{ secrets.USERNAME }}
           to: ${{ secrets.TO }}
