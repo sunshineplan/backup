@@ -1,68 +1,93 @@
 name: geph5
+
 on:
   workflow_dispatch:
   schedule:
     - cron: '0 16 * * *'
+
+permissions:
+  contents: write
+  actions: read
 
 jobs:
   check:
     runs-on: ubuntu-latest
     outputs:
       new_version: ${{ steps.check-version.outputs.new_version }}
+      should_build: ${{ steps.check-version.outputs.should_build }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v7
         with:
           path: repo
+          fetch-depth: 1
 
       - name: Check new version
         id: check-version
         run: |
-          url=https://raw.githubusercontent.com/geph-official/geph5/refs/heads/master/Cargo.toml
-          new=v$(curl -s $url | grep -m 1 'version' | awk -F'"' '{print $2}')
-          if [[ $(cat repo/geph5) != $new ]]
-          then
-            echo $new > repo/geph5
-            echo "new_version=$new" >> $GITHUB_OUTPUT
+          echo "=== Version Check Start ==="
+          CURRENT=$(cat repo/geph5 2>/dev/null || echo "NONE")
+          echo "Current tracked version: $CURRENT"
+
+          URL="https://raw.githubusercontent.com/geph-official/geph5/refs/heads/master/Cargo.toml"
+          NEW_VERSION=$(curl -s $URL | grep -m 1 'version' | awk -F'"' '{print $2}')
+          NEW="v${NEW_VERSION}"
+          echo "Latest version from Cargo.toml: $NEW"
+
+          if [[ "$CURRENT" != "$NEW" ]]; then
+            echo "New version detected! Updating..."
+            echo "$NEW" > repo/geph5
+            echo "new_version=$NEW" >> $GITHUB_OUTPUT
+            echo "should_build=true" >> $GITHUB_OUTPUT
+
             cd repo
-            git config user.name github-actions
-            git config user.email github-actions@github.com
-            git add .
-            git commit -m $new
+            git config user.name "github-actions"
+            git config user.email "github-actions@github.com"
+            git add geph5
+            git commit -m "geph5: update version to $NEW"
             git push
+            echo "Version file updated and pushed."
+          else
+            echo "No new version. Skip build."
+            echo "should_build=false" >> $GITHUB_OUTPUT
           fi
+          echo "=== Version Check End ==="
 
       - name: Delete Old Release
         if: steps.check-version.outputs.new_version
         uses: actions/github-script@v9
         with:
           script: |
-            let release
+            console.log("Deleting old release with tag 'geph5'...");
+            let release;
             try {
               release = await github.rest.repos.getReleaseByTag({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 tag: 'geph5'
-              })
+              });
+              console.log(`Found release: ${release.data.id}, deleting...`);
+              
+              await github.rest.repos.deleteRelease({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                release_id: release.data.id
+              });
+              
+              await github.rest.git.deleteRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: `tags/${release.data.tag_name}`
+              });
+              console.log("Old release and tag deleted successfully.");
             } catch(e) {
-              console.error(e)
-              return
+              console.log("No existing release to delete or already deleted.");
             }
-            await github.rest.repos.deleteRelease({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              release_id: release.data.id
-            })
-            await github.rest.git.deleteRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: 'tags/'+release.data.tag_name
-            })
 
   build:
     runs-on: ${{ matrix.os }}
     needs: check
-    if: needs.check.outputs.new_version
+    if: needs.check.outputs.should_build == 'true'
     strategy:
       matrix:
         include:
@@ -76,30 +101,44 @@ jobs:
       - name: Build
         shell: bash
         run: |
+          echo "=== Build Start for ${{ matrix.name }} ==="
           mkdir -p release
-          git clone https://github.com/geph-official/geph5
+
+          git clone --depth=1 https://github.com/geph-official/geph5.git
           cd geph5/binaries/geph5-client
+
+          echo "Running cargo update..."
           cargo update
+
+          echo "Building with features aws_lambda..."
           cargo build --release --locked --features aws_lambda
+
+          echo "Build completed for ${{ matrix.name }}"
+          ls -la ../../target/release/
 
       - name: Move client binary (non-Windows)
         if: matrix.os != 'windows-latest'
-        run: mv geph5/target/release/geph5-client release/geph5-client-${{ matrix.name }}
+        run: |
+          mv geph5/target/release/geph5-client release/geph5-client-${{ matrix.name }}
+          echo "Binary moved: geph5-client-${{ matrix.name }}"
 
       - name: Move client binary (Windows)
         if: matrix.os == 'windows-latest'
         shell: bash
-        run: mv geph5/target/release/geph5-client.exe release/geph5-client-${{ matrix.name }}.exe
+        run: |
+          mv geph5/target/release/geph5-client.exe release/geph5-client-${{ matrix.name }}.exe
+          echo "Binary moved: geph5-client-${{ matrix.name }}.exe"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.name }}-latest
           path: release/geph5-client*
+          retention-days: 7
 
   release:
     runs-on: ubuntu-latest
-    needs: [ check, build ]
+    needs: [check, build]
     if: needs.check.outputs.new_version
     steps:
       - name: Download all artifacts
@@ -107,6 +146,9 @@ jobs:
         with:
           path: artifacts
           merge-multiple: true
+
+      - name: List downloaded files (debug)
+        run: ls -R artifacts
 
       - name: Create Release
         id: release
@@ -118,6 +160,8 @@ jobs:
           name: geph5 - ${{ needs.check.outputs.new_version }}
           body: geph5 - ${{ needs.check.outputs.new_version }}
           files: artifacts/*
+          draft: false
+          prerelease: false
 
       - name: Send notify
         uses: dawidd6/action-send-mail@v18
@@ -127,6 +171,6 @@ jobs:
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
           subject: geph5 - ${{ needs.check.outputs.new_version }}
-          body: geph5 - ${{ needs.check.outputs.new_version }}
+          body: geph5 - ${{ needs.check.outputs.new_version }} released successfully!
           from: ${{ secrets.USERNAME }}
           to: ${{ secrets.TO }}
