@@ -15,13 +15,17 @@ jobs:
           echo date=$(TZ=PRC date +'%Y-%m-%d') >> $GITHUB_OUTPUT
 
       - name: Get Usage
+        env:
+          CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          SECRET: ${{ secrets.SECRET }}
+        if: env.CLIENT_ID && env.SECRET 
         id: usage
         uses: actions/github-script@v9
         with:
           script: |
             let resp = await fetch('https://console.vpsserver.com/service/authenticate', {
               method: 'POST',
-              body: JSON.stringify({ clientId: '${{ secrets.CLIENT_ID }}', secret: '${{ secrets.SECRET }}' }),
+              body: JSON.stringify({ clientId: '${{ env.CLIENT_ID }}', secret: '${{ env.SECRET }}' }),
               headers: { 'Content-Type': 'application/json' }
             })
             let res = await resp.json()
@@ -36,6 +40,64 @@ jobs:
             return output.join('\n')
           result-encoding: string
 
+      - name: Get Tencent Cloud Usage
+        env:
+          SECRET_ID: ${{ secrets.TENCENTCLOUD_SECRET_ID }}
+          SECRET_KEY: ${{ secrets.TENCENTCLOUD_SECRET_KEY }}
+        if: env.SECRET_ID && env.SECRET_KEY
+        id: tencent-usage
+        run: |
+          secret_id="${{ env.SECRET_ID }}"
+          secret_key="${{ env.SECRET_KEY }}"
+          token=""
+
+          service="lighthouse"
+          host="lighthouse.tencentcloudapi.com"
+          region="ap-shanghai"
+          action="DescribeInstancesTrafficPackages"
+          version="2020-03-24"
+          algorithm="TC3-HMAC-SHA256"
+          timestamp=$(date +%s)
+          date=$(date -u -d @$timestamp +"%Y-%m-%d")
+          payload="{\"InstanceIds\":[\"lhins-3bk0bm08\"]}"
+
+          # ************* 步骤 1：拼接规范请求串 *************
+          http_request_method="POST"
+          canonical_uri="/"
+          canonical_querystring=""
+          canonical_headers="content-type:application/json; charset=utf-8\nhost:$host\nx-tc-action:$(echo $action | awk '{print tolower($0)}')\n"
+          signed_headers="content-type;host;x-tc-action"
+          hashed_request_payload=$(echo -n "$payload" | openssl sha256 -hex | awk '{print $2}')
+          canonical_request="$http_request_method\n$canonical_uri\n$canonical_querystring\n$canonical_headers\n$signed_headers\n$hashed_request_payload"
+          # ************* 步骤 2：拼接待签名字符串 *************
+          credential_scope="$date/$service/tc3_request"
+          hashed_canonical_request=$(printf "$canonical_request" | openssl sha256 -hex | awk '{print $2}')
+          string_to_sign="$algorithm\n$timestamp\n$credential_scope\n$hashed_canonical_request"
+          # ************* 步骤 3：计算签名 *************
+          secret_date=$(printf "$date" | openssl sha256 -hmac "TC3$secret_key" | awk '{print $2}')
+          secret_service=$(printf $service | openssl dgst -sha256 -mac hmac -macopt hexkey:"$secret_date" | awk '{print $2}')
+          secret_signing=$(printf "tc3_request" | openssl dgst -sha256 -mac hmac -macopt hexkey:"$secret_service" | awk '{print $2}')
+          signature=$(printf "$string_to_sign" | openssl dgst -sha256 -mac hmac -macopt hexkey:"$secret_signing" | awk '{print $2}')
+          # ************* 步骤 4：拼接 Authorization *************
+          authorization="$algorithm Credential=$secret_id/$credential_scope, SignedHeaders=$signed_headers, Signature=$signature"
+
+          # ************* 步骤 5：构造并发起请求 *************
+          response=$(curl -XPOST "https://$host" \
+            -d "$payload" \
+            -H "Authorization: $authorization" \
+            -H "Content-Type: application/json; charset=utf-8" \
+            -H "Host: $host" \
+            -H "X-TC-Action: $action" \
+            -H "X-TC-Timestamp: $timestamp" \
+            -H "X-TC-Version: $version" \
+            -H "X-TC-Region: $region" \
+            -H "X-TC-Token: $token")
+
+          echo result=$(echo "$response" | jq -r '
+            .Response.InstanceTrafficPackageSet[0].TrafficPackageSet[0] |
+            "\(.TrafficPackageId): \(.TrafficUsed / 1073741824 | . * 100 + 0.5 | floor / 100)GB(\(.TrafficPackageTotal / 1073741824 | . * 100 + 0.5 | floor / 100)GB)"
+          ') >> $GITHUB_OUTPUT
+
       - name: Send backup email
         uses: dawidd6/action-send-mail@v18
         with:
@@ -44,6 +106,8 @@ jobs:
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
           subject: 'VPS Usage - ${{ steps.date.outputs.date }}'
-          body: ${{ steps.usage.outputs.result }}
+          body: |
+            ${{ steps.usage.outputs.result }}
+            ${{ steps.tencent-usage.outputs.result }}
           from: ${{ secrets.USERNAME }}
           to: ${{ secrets.TO }}
