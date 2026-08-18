@@ -25,12 +25,18 @@ jobs:
       - name: Check new version
         id: check-version
         run: |
+          set -euo pipefail
           echo "=== Version Check Start ==="
           CURRENT=$(cat repo/geph5 2>/dev/null || echo "NONE")
           echo "Current tracked version: $CURRENT"
 
           URL="https://raw.githubusercontent.com/geph-official/geph5/refs/heads/master/Cargo.toml"
-          NEW_VERSION=$(curl -s $URL | grep -m 1 'version' | awk -F'"' '{print $2}')
+          NEW_VERSION=$(curl -fsSL "$URL" | grep -m 1 'version' | awk -F'"' '{print $2}' || true)
+          if [[ -z "$NEW_VERSION" ]]; then
+            echo "ERROR: Failed to resolve geph5 version from Cargo.toml. NEW_VERSION is empty."
+            exit 1
+          fi
+
           NEW="v${NEW_VERSION}"
           echo "Latest version from Cargo.toml: $NEW"
 
