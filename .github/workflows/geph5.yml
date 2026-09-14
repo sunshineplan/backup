@@ -170,7 +170,7 @@ jobs:
           prerelease: false
 
       - name: Send notify
-        uses: dawidd6/action-send-mail@v20
+        uses: dawidd6/action-send-mail@v21
         with:
           server_address: ${{ secrets.SERVER }}
           server_port: 587
